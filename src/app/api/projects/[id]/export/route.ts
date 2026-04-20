@@ -47,13 +47,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       md += `# List: ${list.name}\n\n`;
       list.categories.forEach((category) => {
         md += `## ${category.name}\n`;
-        category.items.forEach((item) => {
+        category.items.forEach((item: any) => {
           let checkbox = "[ ]";
-          if (item.packStatus === "PACKED") checkbox = "[x]";
-          else if (item.packStatus === "STAGED") checkbox = "[-]";
-
-          let assigneeStr = item.assignee ? ` (@${item.assignee.name || item.assignee.email})` : "";
-          md += `- ${checkbox} ${item.name}${assigneeStr}\n`;
+          if (item.quantity === 1) {
+            if (item.packedCount === 1) checkbox = "[x]";
+            else if (item.stagedCount === 1) checkbox = "[-]";
+            let assigneeStr = item.assignee ? ` (@${item.assignee.name || item.assignee.email})` : "";
+            md += `- ${checkbox} ${item.name}${assigneeStr}\n`;
+          } else {
+            if (item.packedCount === item.quantity) checkbox = "[x]";
+            else if (item.stagedCount + item.packedCount > 0) checkbox = "[-]";
+            let assigneeStr = item.assignee ? ` (@${item.assignee.name || item.assignee.email})` : "";
+            md += `- ${checkbox} ${item.quantity}x ${item.name} (${item.stagedCount} Staged, ${item.packedCount} Packed)${assigneeStr}\n`;
+          }
         });
         md += "\n";
       });

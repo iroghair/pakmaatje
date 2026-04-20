@@ -115,8 +115,10 @@ model Item {
   assigneeId String?
   assignee   User?    @relation("ItemAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   
-  // 3-state Enum/String: UNPACKED, STAGED, PACKED
-  packStatus String   @default("UNPACKED")
+  // Quantitative tracking
+  quantity    Int      @default(1)
+  stagedCount Int      @default(0)
+  packedCount Int      @default(0)
 }
 
 model Note {

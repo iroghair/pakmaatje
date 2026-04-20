@@ -12,16 +12,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { name, categoryId } = await req.json();
+    let { name, categoryId } = await req.json();
 
     if (!name || !categoryId) {
       return new NextResponse("Missing fields", { status: 400 });
+    }
+
+    let quantity = 1;
+    // Extract quantity from name (e.g. "4x sleeping bag", "4 st tent", "4 sleeping bag")
+    const qtyMatch = name.match(/^(\d+)\s*(?:x|st)?\s+(.+)$/i);
+    if (qtyMatch) {
+      quantity = parseInt(qtyMatch[1], 10);
+      name = qtyMatch[2].trim();
     }
 
     const item = await prisma.item.create({
       data: {
         name,
         categoryId,
+        quantity,
       },
       include: {
         assignee: true
@@ -44,7 +53,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { itemId, categoryId, packStatus, assigneeId, name } = await req.json();
+    const { itemId, categoryId, quantity, stagedCount, packedCount, assigneeId, name } = await req.json();
 
     if (!itemId) {
       return new NextResponse("Item ID required", { status: 400 });
@@ -54,7 +63,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       where: { id: itemId },
       data: {
         ...(categoryId && { categoryId }),
-        ...(packStatus && { packStatus }),
+        ...(quantity !== undefined && { quantity }),
+        ...(stagedCount !== undefined && { stagedCount }),
+        ...(packedCount !== undefined && { packedCount }),
         ...(assigneeId !== undefined && { assigneeId }),
         ...(name && { name }),
       },

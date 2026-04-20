@@ -16,24 +16,25 @@ type PackingListBoardProps = {
 export function PackingListBoard({ list, projectId, users, currentUser, onListUpdated }: PackingListBoardProps) {
   const [localList, setLocalList] = useState(list);
 
-  // Status mapping
-  const nextStatus = {
-    UNPACKED: "STAGED",
-    STAGED: "PACKED",
-    PACKED: "UNPACKED"
-  } as Record<string, string>;
+  const updateItemAPI = async (item: any, categoryId: string, updates: any) => {
+    const updatedCategories = localList.categories.map((c: any) => {
+      if (c.id === categoryId) {
+        return {
+          ...c,
+          items: c.items.map((i: any) => i.id === item.id ? { ...i, ...updates } : i)
+        };
+      }
+      return c;
+    });
+    setLocalList({ ...localList, categories: updatedCategories });
+    onListUpdated({ ...localList, categories: updatedCategories });
 
-  const statusIcons = {
-    UNPACKED: "O",
-    STAGED: "-",
-    PACKED: "X"
-  } as Record<string, string>;
-
-  const statusColors = {
-    UNPACKED: "text-zinc-500 border-zinc-600",
-    STAGED: "text-yellow-500 border-yellow-500/50 bg-yellow-500/10",
-    PACKED: "text-green-500 border-green-500/50 bg-green-500/10"
-  } as Record<string, string>;
+    await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId: item.id, ...updates }),
+    });
+  };
 
   const handleCreateCategory = async () => {
     const name = prompt("Enter category name (e.g., Sleeping, Tools):");
@@ -57,7 +58,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
   };
 
   const handleCreateItem = async (categoryId: string) => {
-    const name = prompt("Enter item name:");
+    const name = prompt("Enter item name (e.g. '4x sleeping bag' or 'tent'):");
     if (!name) return;
 
     const res = await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
@@ -80,49 +81,36 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     }
   };
 
-  const handleToggleStatus = async (item: any, categoryId: string) => {
-    const newStatus = nextStatus[item.packStatus];
-    
-    // Optimistic UI update
-    const updatedCategories = localList.categories.map((c: any) => {
-      if (c.id === categoryId) {
-        return {
-          ...c,
-          items: c.items.map((i: any) => i.id === item.id ? { ...i, packStatus: newStatus } : i)
-        };
-      }
-      return c;
-    });
-    setLocalList({ ...localList, categories: updatedCategories });
+  const handleToggleSingle = async (item: any, categoryId: string) => {
+    let newStaged = item.stagedCount;
+    let newPacked = item.packedCount;
 
-    // API Call
-    await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId: item.id, packStatus: newStatus }),
-    });
+    if (item.stagedCount === 0 && item.packedCount === 0) {
+      newStaged = 1; newPacked = 0;
+    } else if (item.stagedCount === 1) {
+      newStaged = 0; newPacked = 1;
+    } else {
+      newStaged = 0; newPacked = 0;
+    }
+
+    updateItemAPI(item, categoryId, { stagedCount: newStaged, packedCount: newPacked });
+  };
+
+  const handleUpdateCount = async (item: any, categoryId: string, field: 'stagedCount'|'packedCount', delta: number) => {
+    let newStaged = item.stagedCount;
+    let newPacked = item.packedCount;
+
+    if (field === 'stagedCount') newStaged = Math.max(0, newStaged + delta);
+    if (field === 'packedCount') newPacked = Math.max(0, newPacked + delta);
+
+    if (newStaged + newPacked > item.quantity) return; // Prevent exceeding quantity
+
+    updateItemAPI(item, categoryId, { stagedCount: newStaged, packedCount: newPacked });
   };
 
   const handleAssigneeChange = async (item: any, categoryId: string, assigneeId: string | null) => {
-    // Optimistic UI update
     const assigneeObj = assigneeId ? users.find(u => u.id === assigneeId) : null;
-    const updatedCategories = localList.categories.map((c: any) => {
-      if (c.id === categoryId) {
-        return {
-          ...c,
-          items: c.items.map((i: any) => i.id === item.id ? { ...i, assigneeId, assignee: assigneeObj } : i)
-        };
-      }
-      return c;
-    });
-    setLocalList({ ...localList, categories: updatedCategories });
-
-    // API Call
-    await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId: item.id, assigneeId: assigneeId || null }),
-    });
+    updateItemAPI(item, categoryId, { assigneeId: assigneeId || null, assignee: assigneeObj });
   };
 
   const onDragEnd = async (result: DropResult) => {
@@ -160,133 +148,180 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     }
   };
 
+  const getStatusDisplay = (item: any) => {
+    if (item.packedCount === item.quantity) return { icon: "X", colors: "text-green-500 border-green-500/50 bg-green-500/10" };
+    if (item.stagedCount > 0 || item.packedCount > 0) return { icon: "-", colors: "text-yellow-500 border-yellow-500/50 bg-yellow-500/10" };
+    return { icon: "O", colors: "text-zinc-500 border-zinc-600" };
+  };
+
   return (
     <div className="flex-1 overflow-x-auto overflow-y-hidden hide-scrollbar">
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex items-start gap-4 h-full pb-4">
-          {localList.categories.map((category: any) => (
-            <div key={category.id} className="flex-shrink-0 w-80 max-h-full flex flex-col bg-zinc-950/50 rounded-xl border border-zinc-800">
-              <div className="p-3 border-b border-zinc-800 flex flex-col gap-1 sticky top-0 bg-zinc-950/90 backdrop-blur-md rounded-t-xl z-10">
-                <div className="flex items-center justify-between group/cat">
-                  <h3 className="font-semibold text-zinc-100">{category.name}</h3>
+          {localList.categories.map((category: any) => {
+            const totalQty = category.items.reduce((sum: number, i: any) => sum + i.quantity, 0);
+            const totalStaged = category.items.reduce((sum: number, i: any) => sum + i.stagedCount, 0);
+            const totalPacked = category.items.reduce((sum: number, i: any) => sum + i.packedCount, 0);
+
+            return (
+              <div key={category.id} className="flex-shrink-0 w-80 max-h-full flex flex-col bg-zinc-950/50 rounded-xl border border-zinc-800">
+                <div className="p-3 border-b border-zinc-800 flex flex-col gap-1 sticky top-0 bg-zinc-950/90 backdrop-blur-md rounded-t-xl z-10">
+                  <div className="flex items-center justify-between group/cat">
+                    <h3 className="font-semibold text-zinc-100">{category.name}</h3>
+                    <button 
+                      onClick={async () => {
+                        const newName = prompt("Rename category:", category.name);
+                        if (!newName || newName === category.name) return;
+                        
+                        const newCategories = localList.categories.map((c: any) => c.id === category.id ? { ...c, name: newName } : c);
+                        setLocalList({ ...localList, categories: newCategories });
+                        onListUpdated({ ...localList, categories: newCategories });
+                        
+                        await fetch(`/api/projects/${projectId}/lists/${list.id}/categories`, {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ categoryId: category.id, name: newName }),
+                        });
+                      }}
+                      className="opacity-0 group-hover/cat:opacity-100 text-zinc-500 hover:text-white transition-opacity"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-medium text-zinc-500">
+                    <span>Total: {totalQty}</span>
+                    <span>•</span>
+                    <span className="text-yellow-500/80">Staged: {totalStaged}</span>
+                    <span>•</span>
+                    <span className="text-green-500/80">Packed: {totalPacked}</span>
+                  </div>
+                </div>
+                
+                <Droppable droppableId={category.id}>
+                  {(provided, snapshot) => (
+                    <div 
+                      {...provided.droppableProps} 
+                      ref={provided.innerRef}
+                      className={`flex-1 p-2 overflow-y-auto min-h-[150px] transition-colors ${
+                        snapshot.isDraggingOver ? "bg-indigo-900/10" : ""
+                      }`}
+                    >
+                      {category.items.map((item: any, index: number) => {
+                        const status = getStatusDisplay(item);
+                        return (
+                          <Draggable key={item.id} draggableId={item.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`group flex flex-col gap-2 p-3 mb-2 rounded-lg border transition-all ${
+                                  snapshot.isDragging 
+                                    ? "bg-zinc-800 border-indigo-500/50 shadow-xl shadow-indigo-900/20 rotate-2 scale-105" 
+                                    : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div {...provided.dragHandleProps} className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing">
+                                    <GripVertical className="w-4 h-4" />
+                                  </div>
+                                  
+                                  {item.quantity === 1 ? (
+                                    <button 
+                                      onClick={() => handleToggleSingle(item, category.id)}
+                                      className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border font-mono text-xs font-bold transition-colors ${status.colors}`}
+                                    >
+                                      {status.icon}
+                                    </button>
+                                  ) : (
+                                    <div className={`shrink-0 px-1.5 py-0.5 rounded border text-[10px] font-bold font-mono transition-colors ${status.colors}`}>
+                                      {item.packedCount}/{item.quantity}
+                                    </div>
+                                  )}
+
+                                  <span className={`flex-1 text-sm font-medium ${item.packedCount === item.quantity ? 'line-through text-zinc-500' : 'text-zinc-200'}`}>
+                                    {item.name}
+                                  </span>
+
+                                  <button 
+                                    onClick={() => {
+                                      const newName = prompt("Rename item:", item.name);
+                                      if (!newName || newName === item.name) return;
+
+                                      const qtyStr = prompt("Quantity:", item.quantity.toString());
+                                      const newQty = qtyStr ? parseInt(qtyStr, 10) : item.quantity;
+                                      if (isNaN(newQty) || newQty < 1) return;
+
+                                      let newStaged = item.stagedCount;
+                                      let newPacked = item.packedCount;
+                                      if (newStaged + newPacked > newQty) {
+                                        newStaged = 0; newPacked = 0;
+                                      }
+                                      
+                                      updateItemAPI(item, category.id, { name: newName, quantity: newQty, stagedCount: newStaged, packedCount: newPacked });
+                                    }}
+                                    className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                {/* Multi-Item Counter Panel */}
+                                {item.quantity > 1 && (
+                                  <div className="flex items-center gap-2 mt-1 text-xs bg-zinc-950 p-2 rounded-lg border border-zinc-800/50">
+                                    <div className="flex-1 flex items-center justify-between">
+                                      <span className="text-yellow-500/90 font-medium">Staged</span>
+                                      <div className="flex items-center gap-2 text-zinc-300">
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'stagedCount', -1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">-</button>
+                                        <span className="w-3 text-center">{item.stagedCount}</span>
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'stagedCount', 1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">+</button>
+                                      </div>
+                                    </div>
+                                    <div className="w-px h-6 bg-zinc-800"></div>
+                                    <div className="flex-1 flex items-center justify-between">
+                                      <span className="text-green-500/90 font-medium">Packed</span>
+                                      <div className="flex items-center gap-2 text-zinc-300">
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'packedCount', -1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">-</button>
+                                        <span className="w-3 text-center">{item.packedCount}</span>
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'packedCount', 1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">+</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Assignee Footer */}
+                                <div className="flex justify-end mt-1">
+                                  <select 
+                                    value={item.assigneeId || ""}
+                                    onChange={(e) => handleAssigneeChange(item, category.id, e.target.value)}
+                                    className="bg-transparent text-xs text-zinc-500 hover:text-zinc-300 focus:outline-none cursor-pointer text-right appearance-none"
+                                  >
+                                    <option value="">Unassigned</option>
+                                    {users.map(u => (
+                                      <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+
+                <div className="p-2 border-t border-zinc-800 mt-auto">
                   <button 
-                    onClick={async () => {
-                      const newName = prompt("Rename category:", category.name);
-                      if (!newName || newName === category.name) return;
-                      // Optimistic UI
-                      const newCategories = localList.categories.map((c: any) => c.id === category.id ? { ...c, name: newName } : c);
-                      setLocalList({ ...localList, categories: newCategories });
-                      onListUpdated({ ...localList, categories: newCategories });
-                      // API Call
-                      await fetch(`/api/projects/${projectId}/lists/${list.id}/categories`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ categoryId: category.id, name: newName }),
-                      });
-                    }}
-                    className="opacity-0 group-hover/cat:opacity-100 text-zinc-500 hover:text-white transition-opacity"
+                    onClick={() => handleCreateItem(category.id)}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <Plus className="w-4 h-4" /> Add Item
                   </button>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-medium text-zinc-500">
-                  <span>Total: {category.items.length}</span>
-                  <span>•</span>
-                  <span className="text-yellow-500/80">Staged: {category.items.filter((i:any) => i.packStatus === 'STAGED').length}</span>
-                  <span>•</span>
-                  <span className="text-green-500/80">Packed: {category.items.filter((i:any) => i.packStatus === 'PACKED').length}</span>
-                </div>
               </div>
-              
-              <Droppable droppableId={category.id}>
-                {(provided, snapshot) => (
-                  <div 
-                    {...provided.droppableProps} 
-                    ref={provided.innerRef}
-                    className={`flex-1 p-2 overflow-y-auto min-h-[150px] transition-colors ${
-                      snapshot.isDraggingOver ? "bg-indigo-900/10" : ""
-                    }`}
-                  >
-                    {category.items.map((item: any, index: number) => (
-                      <Draggable key={item.id} draggableId={item.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            className={`group flex flex-col gap-2 p-3 mb-2 rounded-lg border transition-all ${
-                              snapshot.isDragging 
-                                ? "bg-zinc-800 border-indigo-500/50 shadow-xl shadow-indigo-900/20 rotate-2 scale-105" 
-                                : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div {...provided.dragHandleProps} className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing">
-                                <GripVertical className="w-4 h-4" />
-                              </div>
-                              <button 
-                                onClick={() => handleToggleStatus(item, category.id)}
-                                className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border font-mono text-xs font-bold transition-colors ${statusColors[item.packStatus]}`}
-                              >
-                                {statusIcons[item.packStatus]}
-                              </button>
-                              <span className={`flex-1 text-sm font-medium ${item.packStatus === 'PACKED' ? 'line-through text-zinc-500' : 'text-zinc-200'}`}>
-                                {item.name}
-                              </span>
-                              <button 
-                                onClick={async () => {
-                                  const newName = prompt("Rename item:", item.name);
-                                  if (!newName || newName === item.name) return;
-                                  // Optimistic UI
-                                  const newCategories = localList.categories.map((c: any) => c.id === category.id ? {
-                                    ...c, items: c.items.map((i: any) => i.id === item.id ? { ...i, name: newName } : i)
-                                  } : c);
-                                  setLocalList({ ...localList, categories: newCategories });
-                                  
-                                  // API Call
-                                  await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
-                                    method: "PUT",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ itemId: item.id, name: newName }),
-                                  });
-                                }}
-                                className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-
-                            {/* Assignee Footer */}
-                            <div className="flex justify-end mt-1">
-                              <select 
-                                value={item.assigneeId || ""}
-                                onChange={(e) => handleAssigneeChange(item, category.id, e.target.value)}
-                                className="bg-transparent text-xs text-zinc-500 hover:text-zinc-300 focus:outline-none cursor-pointer text-right appearance-none"
-                              >
-                                <option value="">Unassigned</option>
-                                {users.map(u => (
-                                  <option key={u.id} value={u.id}>{u.name || u.email}</option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-
-              <div className="p-2 border-t border-zinc-800 mt-auto">
-                <button 
-                  onClick={() => handleCreateItem(category.id)}
-                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                >
-                  <Plus className="w-4 h-4" /> Add Item
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Add Category Button */}
           <button 
