@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { Project, PackingList, Category, Item, Note, User } from "@prisma/client";
-import { ListIcon, FileText, Plus } from "lucide-react";
+import { ListIcon, FileText, Plus, ArrowLeft, Edit2, Download } from "lucide-react";
 import { PackingListBoard } from "./PackingListBoard";
 import { NotesBoard } from "./NotesBoard";
+import Link from "next/link";
 
 // Type definitions that match Prisma's output with includes
 type ItemWithAssignee = Item & { assignee: Partial<User> | null };
@@ -30,6 +31,23 @@ export function ProjectClient({
     initialProject.lists.length > 0 ? initialProject.lists[0].id : null
   );
 
+  const canEditProject = project.ownerId === currentUser.id || currentUser.role === "ADMIN";
+
+  const handleEditProject = async () => {
+    const newName = prompt("Project Name:", project.name);
+    if (!newName) return;
+    const newDesc = prompt("Project Description:", project.description || "");
+    
+    // Optimistic UI
+    setProject({ ...project, name: newName, description: newDesc });
+
+    await fetch(`/api/projects/${project.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName, description: newDesc }),
+    });
+  };
+
   const handleCreateList = async () => {
     const name = prompt("Enter list name (e.g., Summer Gear):");
     if (!name) return;
@@ -54,6 +72,35 @@ export function ProjectClient({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
+      <header className="flex items-center justify-between mb-6 shrink-0">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="p-2 rounded-full hover:bg-zinc-800 transition text-zinc-400 hover:text-white">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div className="group/proj flex items-center gap-3">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white">{project.name}</h1>
+              {project.description && <p className="text-sm text-zinc-400">{project.description}</p>}
+            </div>
+            {canEditProject && (
+              <button 
+                onClick={handleEditProject}
+                className="opacity-0 group-hover/proj:opacity-100 p-2 text-zinc-500 hover:text-white transition-opacity"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+        <a 
+          href={`/api/projects/${project.id}/export`}
+          target="_blank"
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-lg text-sm font-medium transition-colors text-zinc-300"
+        >
+          <Download className="w-4 h-4" /> Export
+        </a>
+      </header>
+
       {/* Tabs */}
       <div className="flex border-b border-zinc-800 shrink-0 mb-4">
         <button
@@ -62,7 +109,7 @@ export function ProjectClient({
             activeTab === "lists" ? "border-indigo-500 text-white" : "border-transparent text-zinc-400 hover:text-zinc-200"
           }`}
         >
-          <ListIcon className="w-4 h-4" /> Packing Lists
+          <ListIcon className="w-4 h-4" /> Lists
         </button>
         <button
           onClick={() => setActiveTab("notes")}
@@ -114,7 +161,7 @@ export function ProjectClient({
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-zinc-500">
               <ListIcon className="w-12 h-12 mb-4 opacity-50" />
-              <p>No packing lists yet. Create one to get started.</p>
+              <p>No lists yet. Create one to get started.</p>
             </div>
           )}
         </div>

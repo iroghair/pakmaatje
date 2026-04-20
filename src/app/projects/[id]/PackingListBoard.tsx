@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Plus, GripVertical, User as UserIcon } from "lucide-react";
+import { Plus, GripVertical, User as UserIcon, Edit2 } from "lucide-react";
 import Image from "next/image";
 
 type PackingListBoardProps = {
@@ -166,11 +166,36 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
         <div className="flex items-start gap-4 h-full pb-4">
           {localList.categories.map((category: any) => (
             <div key={category.id} className="flex-shrink-0 w-80 max-h-full flex flex-col bg-zinc-950/50 rounded-xl border border-zinc-800">
-              <div className="p-3 border-b border-zinc-800 flex items-center justify-between sticky top-0 bg-zinc-950/80 backdrop-blur-md rounded-t-xl z-10">
-                <h3 className="font-semibold">{category.name}</h3>
-                <span className="text-xs text-zinc-500 bg-zinc-900 px-2 py-1 rounded-full">
-                  {category.items.length}
-                </span>
+              <div className="p-3 border-b border-zinc-800 flex flex-col gap-1 sticky top-0 bg-zinc-950/90 backdrop-blur-md rounded-t-xl z-10">
+                <div className="flex items-center justify-between group/cat">
+                  <h3 className="font-semibold text-zinc-100">{category.name}</h3>
+                  <button 
+                    onClick={async () => {
+                      const newName = prompt("Rename category:", category.name);
+                      if (!newName || newName === category.name) return;
+                      // Optimistic UI
+                      const newCategories = localList.categories.map((c: any) => c.id === category.id ? { ...c, name: newName } : c);
+                      setLocalList({ ...localList, categories: newCategories });
+                      onListUpdated({ ...localList, categories: newCategories });
+                      // API Call
+                      await fetch(`/api/projects/${projectId}/lists/${list.id}/categories`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ categoryId: category.id, name: newName }),
+                      });
+                    }}
+                    className="opacity-0 group-hover/cat:opacity-100 text-zinc-500 hover:text-white transition-opacity"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-medium text-zinc-500">
+                  <span>Total: {category.items.length}</span>
+                  <span>•</span>
+                  <span className="text-yellow-500/80">Staged: {category.items.filter((i:any) => i.packStatus === 'STAGED').length}</span>
+                  <span>•</span>
+                  <span className="text-green-500/80">Packed: {category.items.filter((i:any) => i.packStatus === 'PACKED').length}</span>
+                </div>
               </div>
               
               <Droppable droppableId={category.id}>
@@ -207,6 +232,27 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                               <span className={`flex-1 text-sm font-medium ${item.packStatus === 'PACKED' ? 'line-through text-zinc-500' : 'text-zinc-200'}`}>
                                 {item.name}
                               </span>
+                              <button 
+                                onClick={async () => {
+                                  const newName = prompt("Rename item:", item.name);
+                                  if (!newName || newName === item.name) return;
+                                  // Optimistic UI
+                                  const newCategories = localList.categories.map((c: any) => c.id === category.id ? {
+                                    ...c, items: c.items.map((i: any) => i.id === item.id ? { ...i, name: newName } : i)
+                                  } : c);
+                                  setLocalList({ ...localList, categories: newCategories });
+                                  
+                                  // API Call
+                                  await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
+                                    method: "PUT",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ itemId: item.id, name: newName }),
+                                  });
+                                }}
+                                className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
 
                             {/* Assignee Footer */}

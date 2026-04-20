@@ -44,7 +44,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { itemId, categoryId, packStatus, assigneeId } = await req.json();
+    const { itemId, categoryId, packStatus, assigneeId, name } = await req.json();
 
     if (!itemId) {
       return new NextResponse("Item ID required", { status: 400 });
@@ -56,6 +56,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         ...(categoryId && { categoryId }),
         ...(packStatus && { packStatus }),
         ...(assigneeId !== undefined && { assigneeId }),
+        ...(name && { name }),
       },
       include: {
         assignee: true

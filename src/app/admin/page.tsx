@@ -1,0 +1,35 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { AdminClient } from "./AdminClient";
+
+export default async function AdminPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user || session.user.role !== "ADMIN") {
+    redirect("/");
+  }
+
+  const users = await prisma.user.findMany({
+    orderBy: { email: "asc" }
+  });
+
+  return (
+    <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-12">
+      <header className="flex items-center gap-4 mb-8">
+        <Link href="/" className="p-2 rounded-full hover:bg-zinc-800 transition text-zinc-400 hover:text-white">
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-sm text-zinc-400 mt-1">Manage users and access control</p>
+        </div>
+      </header>
+
+      <AdminClient initialUsers={users} />
+    </main>
+  );
+}

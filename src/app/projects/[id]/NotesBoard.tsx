@@ -84,13 +84,13 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
           </div>
         ) : (
           notes.map((note) => (
-            <div key={note.id} className="flex items-start gap-4 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">
-              <div className="mt-1 p-2 bg-zinc-950 rounded-lg border border-zinc-800">
+            <div key={note.id} className="flex items-start gap-4 p-4 bg-indigo-950/20 rounded-xl border border-indigo-900/30">
+              <div className="mt-1 p-2 bg-indigo-950/50 rounded-lg border border-indigo-900/50">
                 {getIcon(note.type)}
               </div>
               <div className="flex-1">
                 {note.type === "URL" ? (
-                  <a href={note.content} target="_blank" rel="noreferrer" className="text-indigo-400 hover:underline break-all">
+                  <a href={note.content} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline break-all">
                     {note.content}
                   </a>
                 ) : note.type === "LOCATION" ? (

@@ -34,3 +34,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
+
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string, listId: string }> }) {
+  try {
+    const { id, listId } = await params;
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user || session.user.status !== "APPROVED") {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const { categoryId, name } = await req.json();
+
+    if (!categoryId || !name) {
+      return new NextResponse("Missing fields", { status: 400 });
+    }
+
+    const category = await prisma.category.update({
+      where: { id: categoryId },
+      data: { name },
+    });
+
+    return NextResponse.json(category);
+  } catch (error) {
+    console.error("[CATEGORIES_PUT]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}

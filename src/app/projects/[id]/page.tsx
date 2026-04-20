@@ -56,16 +56,6 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
   return (
     <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 flex flex-col h-screen overflow-hidden">
-      <header className="flex items-center gap-4 mb-6 shrink-0">
-        <Link href="/" className="p-2 rounded-full hover:bg-zinc-800 transition text-zinc-400 hover:text-white">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
-          {project.description && <p className="text-sm text-zinc-400">{project.description}</p>}
-        </div>
-      </header>
-
       <ProjectClient initialProject={project} users={users} currentUser={session.user} />
     </main>
   );
