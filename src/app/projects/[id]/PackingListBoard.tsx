@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Plus, GripVertical, User as UserIcon, Edit2 } from "lucide-react";
+import { Plus, GripVertical, User as UserIcon, Edit2, Copy } from "lucide-react";
 import Image from "next/image";
 
 type PackingListBoardProps = {
@@ -168,25 +168,51 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                 <div className="p-3 border-b border-white/40 flex flex-col gap-1 sticky top-0 bg-white/30 backdrop-blur-xl rounded-t-2xl z-10">
                   <div className="flex items-center justify-between group/cat">
                     <h3 className="font-extrabold text-primary-950 drop-shadow-sm">{category.name}</h3>
-                    <button 
-                      onClick={async () => {
-                        const newName = prompt("Rename category:", category.name);
-                        if (!newName || newName === category.name) return;
-                        
-                        const newCategories = localList.categories.map((c: any) => c.id === category.id ? { ...c, name: newName } : c);
-                        setLocalList({ ...localList, categories: newCategories });
-                        onListUpdated({ ...localList, categories: newCategories });
-                        
-                        await fetch(`/api/projects/${projectId}/lists/${list.id}/categories`, {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ categoryId: category.id, name: newName }),
-                        });
-                      }}
-                      className="opacity-0 group-hover/cat:opacity-100 text-primary-800 hover:text-primary-950 transition-opacity"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1 opacity-0 group-hover/cat:opacity-100 transition-opacity">
+                      <button 
+                        onClick={async () => {
+                          const newName = prompt("Rename category:", category.name);
+                          if (!newName || newName === category.name) return;
+                          
+                          const newCategories = localList.categories.map((c: any) => c.id === category.id ? { ...c, name: newName } : c);
+                          setLocalList({ ...localList, categories: newCategories });
+                          onListUpdated({ ...localList, categories: newCategories });
+                          
+                          await fetch(`/api/projects/${projectId}/lists/${list.id}/categories`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ categoryId: category.id, name: newName }),
+                          });
+                        }}
+                        className="text-primary-800 hover:text-primary-950 p-1"
+                        title="Rename Category"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          const newName = prompt("Name for duplicated category:", `${category.name} (Copy)`);
+                          if (!newName) return;
+                          
+                          const res = await fetch(`/api/projects/${projectId}/lists/${list.id}/categories/${category.id}/duplicate`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ name: newName }),
+                          });
+
+                          if (res.ok) {
+                            const newCategory = await res.json();
+                            const newCategories = [...localList.categories, newCategory];
+                            setLocalList({ ...localList, categories: newCategories });
+                            onListUpdated({ ...localList, categories: newCategories });
+                          }
+                        }}
+                        className="text-primary-800 hover:text-primary-950 p-1"
+                        title="Duplicate Category"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-bold text-primary-900/70 uppercase tracking-wider">
                     <span>Total: {totalQty}</span>
