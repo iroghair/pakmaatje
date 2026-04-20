@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Project, PackingList, Category, Item, Note, User } from "@prisma/client";
-import { ListIcon, FileText, Plus, ArrowLeft, Edit2, Download } from "lucide-react";
+import { ListIcon, FileText, Plus, ArrowLeft, Edit2, Download, Copy, RefreshCcw } from "lucide-react";
 import { PackingListBoard } from "./PackingListBoard";
 import { NotesBoard } from "./NotesBoard";
 import Link from "next/link";
@@ -69,6 +69,68 @@ export function ProjectClient({
   };
 
   const activeList = project.lists.find(l => l.id === activeListId);
+
+  const handleRenameList = async () => {
+    if (!activeList) return;
+    const newName = prompt("Rename list:", activeList.name);
+    if (!newName || newName === activeList.name) return;
+
+    setProject(prev => ({
+      ...prev,
+      lists: prev.lists.map(l => l.id === activeList.id ? { ...l, name: newName } : l)
+    }));
+
+    await fetch(`/api/projects/${project.id}/lists/${activeList.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    });
+  };
+
+  const handleDuplicateList = async () => {
+    if (!activeList) return;
+    const newName = prompt("Name for duplicated list:", `${activeList.name} (Copy)`);
+    if (!newName) return;
+
+    const res = await fetch(`/api/projects/${project.id}/lists/${activeList.id}/duplicate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    });
+
+    if (res.ok) {
+      const newList = await res.json();
+      setProject(prev => ({
+        ...prev,
+        lists: [...prev.lists, newList]
+      }));
+      setActiveListId(newList.id);
+    }
+  };
+
+  const handleResetList = async () => {
+    if (!activeList) return;
+    const confirmReset = window.confirm("Are you sure you want to unstage and unpack everything in this list? This cannot be undone.");
+    if (!confirmReset) return;
+
+    // Optimistic UI
+    const updatedList = {
+      ...activeList,
+      categories: activeList.categories.map(c => ({
+        ...c,
+        items: c.items.map(i => ({ ...i, stagedCount: 0, packedCount: 0 }))
+      }))
+    };
+
+    setProject(prev => ({
+      ...prev,
+      lists: prev.lists.map(l => l.id === activeList.id ? updatedList : l)
+    }));
+
+    await fetch(`/api/projects/${project.id}/lists/${activeList.id}/reset`, {
+      method: "POST",
+    });
+  };
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -146,18 +208,33 @@ export function ProjectClient({
 
           {/* Active List Board */}
           {activeList ? (
-            <PackingListBoard 
-              list={activeList} 
-              projectId={project.id} 
-              users={users} 
-              currentUser={currentUser}
-              onListUpdated={(updatedList) => {
-                setProject(prev => ({
-                  ...prev,
-                  lists: prev.lists.map(l => l.id === updatedList.id ? updatedList : l)
-                }));
-              }}
-            />
+            <>
+              {/* List Action Bar */}
+              <div className="flex flex-wrap items-center gap-2 mb-4 px-2 pb-3 border-b border-white/20 shrink-0">
+                <h2 className="text-xl font-extrabold text-primary-950 mr-2 drop-shadow-sm">{activeList.name}</h2>
+                <button onClick={handleRenameList} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/30 hover:bg-white/50 border border-white/50 rounded-xl text-xs font-bold text-primary-950 shadow-sm transition-all">
+                  <Edit2 className="w-3.5 h-3.5" /> Rename
+                </button>
+                <button onClick={handleDuplicateList} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/30 hover:bg-white/50 border border-white/50 rounded-xl text-xs font-bold text-primary-950 shadow-sm transition-all">
+                  <Copy className="w-3.5 h-3.5" /> Duplicate
+                </button>
+                <button onClick={handleResetList} className="flex items-center gap-1.5 px-3 py-1.5 bg-analogous1-500/20 hover:bg-analogous1-500/30 border border-analogous1-500/40 rounded-xl text-xs font-bold text-analogous1-700 shadow-sm transition-all ml-auto">
+                  <RefreshCcw className="w-3.5 h-3.5" /> Reset Packing
+                </button>
+              </div>
+              <PackingListBoard 
+                list={activeList} 
+                projectId={project.id} 
+                users={users} 
+                currentUser={currentUser}
+                onListUpdated={(updatedList) => {
+                  setProject(prev => ({
+                    ...prev,
+                    lists: prev.lists.map(l => l.id === updatedList.id ? updatedList : l)
+                  }));
+                }}
+              />
+            </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-primary-900/60">
               <ListIcon className="w-12 h-12 mb-4 opacity-50" />
