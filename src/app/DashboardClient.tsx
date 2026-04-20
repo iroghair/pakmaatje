@@ -48,12 +48,12 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
         {/* Create New Project Card */}
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="group relative flex flex-col items-center justify-center min-h-[240px] rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-zinc-700 transition-all text-zinc-400 hover:text-white overflow-hidden"
+          className="group relative flex flex-col items-center justify-center min-h-[240px] rounded-2xl border-2 border-dashed border-white/50 bg-white/10 backdrop-blur-md shadow-xl hover:bg-white/20 hover:border-white/70 transition-all text-primary-900 overflow-hidden"
         >
-          <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Plus className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-full bg-white/40 shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Plus className="w-6 h-6 text-primary-950" />
           </div>
-          <span className="font-medium">New Project</span>
+          <span className="font-semibold text-primary-950">New Project</span>
         </button>
 
         {/* Project Cards */}
@@ -61,26 +61,26 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
           <Link 
             href={`/projects/${project.id}`} 
             key={project.id}
-            className="group relative flex flex-col min-h-[240px] rounded-2xl border border-zinc-800 bg-zinc-900 hover:border-zinc-600 transition-all overflow-hidden"
+            className="group relative flex flex-col min-h-[240px] rounded-2xl border border-white/40 bg-white/20 backdrop-blur-md shadow-xl hover:border-white/60 transition-all overflow-hidden"
           >
-            <div className="relative h-32 w-full bg-zinc-800">
+            <div className="relative h-32 w-full bg-white/20">
               {project.imageUrl ? (
                 <Image src={project.imageUrl} alt={project.name} fill className="object-cover transition-transform group-hover:scale-105" />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-purple-900/40" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-400/50 to-accent-500/50" />
               )}
               {project.isPrivate && (
-                <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-xs font-medium border border-zinc-700/50">
+                <span className="absolute top-3 right-3 bg-white/50 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold text-primary-950 border border-white/40 shadow-sm">
                   Private
                 </span>
               )}
             </div>
             <div className="p-5 flex flex-col flex-1">
-              <h3 className="font-semibold text-lg mb-1 group-hover:text-indigo-400 transition-colors">{project.name}</h3>
+              <h3 className="font-bold text-lg mb-1 text-primary-950 group-hover:text-primary-700 transition-colors">{project.name}</h3>
               {project.description && (
-                <p className="text-sm text-zinc-400 line-clamp-2 mb-4">{project.description}</p>
+                <p className="text-sm text-primary-900/80 line-clamp-2 mb-4 font-medium">{project.description}</p>
               )}
-              <div className="mt-auto flex items-center gap-4 text-xs text-zinc-500 font-medium">
+              <div className="mt-auto flex items-center gap-4 text-xs text-primary-900/70 font-bold uppercase tracking-wide">
                 <span>{project._count.lists} Lists</span>
                 <span>{project._count.notes} Notes</span>
               </div>
@@ -91,33 +91,33 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
 
       {/* Create Project Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-md p-6 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
+          <div className="bg-white/40 backdrop-blur-2xl border border-white/60 rounded-3xl w-full max-w-md p-6 relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              className="absolute top-4 right-4 text-primary-900 hover:text-primary-950 bg-white/30 rounded-full p-1 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-2xl font-bold mb-6">Create New Project</h2>
+            <h2 className="text-2xl font-bold mb-6 text-primary-950">Create New Project</h2>
             <form onSubmit={handleCreateProject} className="flex flex-col gap-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-zinc-400 mb-1">Project Name</label>
+                <label htmlFor="name" className="block text-sm font-bold text-primary-950 mb-1">Project Name</label>
                 <input 
                   type="text" 
                   id="name" 
                   name="name" 
                   required 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-inner transition-all"
                   placeholder="e.g. Bikepacking 2026"
                 />
               </div>
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-zinc-400 mb-1">Description (Optional)</label>
+                <label htmlFor="description" className="block text-sm font-bold text-primary-950 mb-1">Description (Optional)</label>
                 <textarea 
                   id="description" 
                   name="description" 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none h-24"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-inner transition-all resize-none h-24"
                   placeholder="A short description of this project..."
                 />
               </div>
@@ -126,16 +126,16 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
                   type="checkbox" 
                   id="isPrivate" 
                   name="isPrivate"
-                  className="w-5 h-5 rounded border-zinc-700 bg-zinc-950 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-zinc-900" 
+                  className="w-5 h-5 rounded border-gray-300 bg-white text-primary-500 focus:ring-primary-500" 
                 />
-                <label htmlFor="isPrivate" className="text-sm text-zinc-300">
+                <label htmlFor="isPrivate" className="text-sm font-medium text-primary-900">
                   Make this project private (only visible to you)
                 </label>
               </div>
               <button 
                 type="submit" 
                 disabled={isCreating}
-                className="w-full mt-4 bg-white text-zinc-900 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2"
+                className="w-full mt-4 bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2"
               >
                 {isCreating ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Creating...</>

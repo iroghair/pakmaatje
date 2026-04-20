@@ -74,18 +74,18 @@ export function ProjectClient({
     <div className="flex flex-col flex-1 min-h-0">
       <header className="flex items-center justify-between mb-6 shrink-0">
         <div className="flex items-center gap-4">
-          <Link href="/" className="p-2 rounded-full hover:bg-zinc-800 transition text-zinc-400 hover:text-white">
+          <Link href="/" className="p-2 rounded-full hover:bg-white/30 bg-white/10 backdrop-blur-md border border-white/30 transition text-primary-900 hover:text-primary-950">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="group/proj flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">{project.name}</h1>
-              {project.description && <p className="text-sm text-zinc-400">{project.description}</p>}
+              <h1 className="text-3xl font-extrabold tracking-tight text-primary-950 drop-shadow-sm">{project.name}</h1>
+              {project.description && <p className="text-sm text-primary-900/80 font-medium">{project.description}</p>}
             </div>
             {canEditProject && (
               <button 
                 onClick={handleEditProject}
-                className="opacity-0 group-hover/proj:opacity-100 p-2 text-zinc-500 hover:text-white transition-opacity"
+                className="opacity-0 group-hover/proj:opacity-100 p-2 text-primary-800 hover:text-primary-950 transition-opacity"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
@@ -95,26 +95,26 @@ export function ProjectClient({
         <a 
           href={`/api/projects/${project.id}/export`}
           target="_blank"
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-lg text-sm font-medium transition-colors text-zinc-300"
+          className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md border border-white/40 shadow-sm hover:bg-white/30 rounded-xl text-sm font-bold transition-colors text-primary-950"
         >
           <Download className="w-4 h-4" /> Export
         </a>
       </header>
 
       {/* Tabs */}
-      <div className="flex border-b border-zinc-800 shrink-0 mb-4">
+      <div className="flex border-b border-white/30 shrink-0 mb-4">
         <button
           onClick={() => setActiveTab("lists")}
-          className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-            activeTab === "lists" ? "border-indigo-500 text-white" : "border-transparent text-zinc-400 hover:text-zinc-200"
+          className={`flex items-center gap-2 px-4 py-3 border-b-[3px] font-bold text-sm transition-colors ${
+            activeTab === "lists" ? "border-primary-500 text-primary-950" : "border-transparent text-primary-900/60 hover:text-primary-900/90"
           }`}
         >
           <ListIcon className="w-4 h-4" /> Lists
         </button>
         <button
           onClick={() => setActiveTab("notes")}
-          className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-            activeTab === "notes" ? "border-indigo-500 text-white" : "border-transparent text-zinc-400 hover:text-zinc-200"
+          className={`flex items-center gap-2 px-4 py-3 border-b-[3px] font-bold text-sm transition-colors ${
+            activeTab === "notes" ? "border-primary-500 text-primary-950" : "border-transparent text-primary-900/60 hover:text-primary-900/90"
           }`}
         >
           <FileText className="w-4 h-4" /> Notes & Links
@@ -122,15 +122,15 @@ export function ProjectClient({
       </div>
 
       {activeTab === "lists" && (
-        <div className="flex flex-col flex-1 min-h-0 bg-zinc-900/50 rounded-xl border border-zinc-800 p-2 md:p-4 overflow-hidden">
+        <div className="flex flex-col flex-1 min-h-0 bg-white/10 backdrop-blur-md shadow-xl rounded-2xl border border-white/30 p-2 md:p-4 overflow-hidden">
           {/* List Selector */}
           <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 shrink-0 hide-scrollbar">
             {project.lists.map(list => (
               <button
                 key={list.id}
                 onClick={() => setActiveListId(list.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                  activeListId === list.id ? "bg-indigo-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all shadow-sm ${
+                  activeListId === list.id ? "bg-primary-500 text-white border border-primary-400" : "bg-white/40 text-primary-950 border border-white/50 hover:bg-white/60"
                 }`}
               >
                 {list.name}
@@ -138,7 +138,7 @@ export function ProjectClient({
             ))}
             <button
               onClick={handleCreateList}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-zinc-950 border border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors flex items-center gap-2 whitespace-nowrap"
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-white/20 border-2 border-dashed border-primary-900/30 text-primary-900 hover:text-primary-950 hover:bg-white/30 transition-colors flex items-center gap-2 whitespace-nowrap"
             >
               <Plus className="w-4 h-4" /> New List
             </button>
@@ -159,9 +159,9 @@ export function ProjectClient({
               }}
             />
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-zinc-500">
+            <div className="flex-1 flex flex-col items-center justify-center text-primary-900/60">
               <ListIcon className="w-12 h-12 mb-4 opacity-50" />
-              <p>No lists yet. Create one to get started.</p>
+              <p className="font-medium">No lists yet. Create one to get started.</p>
             </div>
           )}
         </div>

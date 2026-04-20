@@ -10,17 +10,66 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary-50: #f6eae4;
+  --color-primary-100: #eeccba;
+  --color-primary-200: #eaac8a;
+  --color-primary-300: #ec8a55;
+  --color-primary-400: #f3671b;
+  --color-primary-500: #EA580C;
+  --color-primary-600: #bd4505;
+  --color-primary-700: #8f3200;
+  --color-primary-800: #5c2000;
+  --color-primary-900: #290e00;
+  --color-primary-950: #0a0400;
+
+  --color-analogous1-50: #f6e4e7;
+  --color-analogous1-100: #eebac1;
+  --color-analogous1-200: #ea8a98;
+  --color-analogous1-300: #ec556c;
+  --color-analogous1-400: #f31b3c;
+  --color-analogous1-500: #e90c2d;
+  --color-analogous1-600: #bd0520;
+  --color-analogous1-700: #8f0015;
+  --color-analogous1-800: #5c000e;
+  --color-analogous1-900: #290006;
+  --color-analogous1-950: #0a0002;
+
+  --color-analogous2-50: #f6f3e4;
+  --color-analogous2-100: #eee6ba;
+  --color-analogous2-200: #eadc8a;
+  --color-analogous2-300: #ecd555;
+  --color-analogous2-400: #f3d31b;
+  --color-analogous2-500: #e9c80c;
+  --color-analogous2-600: #bda105;
+  --color-analogous2-700: #8f7900;
+  --color-analogous2-800: #5c4e00;
+  --color-analogous2-900: #292300;
+  --color-analogous2-950: #0a0900;
+
+  --color-accent-50: #e4f0f6;
+  --color-accent-100: #badbee;
+  --color-accent-200: #8ac9ea;
+  --color-accent-300: #55b7ec;
+  --color-accent-400: #1ba8f3;
+  --color-accent-500: #0c9be9;
+  --color-accent-600: #057dbd;
+  --color-accent-700: #005d8f;
+  --color-accent-800: #003c5c;
+  --color-accent-900: #001b29;
+  --color-accent-950: #00070a;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  /* Vibrant Mesh Gradient Background */
+  background-color: var(--color-primary-50);
+  background-image: 
+    radial-gradient(at 0% 0%, var(--color-analogous1-200) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, var(--color-accent-200) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, var(--color-analogous2-200) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, var(--color-primary-200) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, var(--color-accent-100) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--color-primary-950);
   font-family: Arial, Helvetica, sans-serif;
 }

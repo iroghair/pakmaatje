@@ -29,25 +29,25 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
   };
 
   const getIcon = (t: string) => {
-    if (t === "URL") return <LinkIcon className="w-5 h-5 text-indigo-400" />;
-    if (t === "LOCATION") return <MapPin className="w-5 h-5 text-red-400" />;
-    return <AlignLeft className="w-5 h-5 text-zinc-400" />;
+    if (t === "URL") return <LinkIcon className="w-5 h-5 text-accent-600 drop-shadow-sm" />;
+    if (t === "LOCATION") return <MapPin className="w-5 h-5 text-analogous1-600 drop-shadow-sm" />;
+    return <AlignLeft className="w-5 h-5 text-primary-600 drop-shadow-sm" />;
   };
 
   return (
     <div className="flex flex-col md:flex-row gap-6 w-full h-full">
       {/* Create Note Form */}
-      <div className="w-full md:w-1/3 flex flex-col bg-zinc-900/50 rounded-xl border border-zinc-800 p-4">
-        <h3 className="font-semibold text-lg mb-4">Add a Note</h3>
+      <div className="w-full md:w-1/3 flex flex-col bg-white/20 backdrop-blur-md rounded-2xl shadow-xl border border-white/40 p-5">
+        <h3 className="font-extrabold text-xl text-primary-950 mb-4 drop-shadow-sm">Add a Note</h3>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex bg-zinc-950 p-1 rounded-lg border border-zinc-800">
+          <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-300 shadow-inner">
             {["TEXT", "URL", "LOCATION"].map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setType(t)}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  type === t ? "bg-zinc-800 text-white" : "text-zinc-500 hover:text-zinc-300"
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm ${
+                  type === t ? "bg-white text-black border border-gray-200" : "text-gray-500 hover:text-black hover:bg-white/50 border border-transparent shadow-none"
                 }`}
               >
                 {t}
@@ -62,51 +62,51 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
               type === "LOCATION" ? "Coordinates or Place Name..." : 
               "Write your notes here..."
             }
-            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none h-32"
+            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all resize-none h-32 shadow-inner"
           />
           <button
             type="submit"
             disabled={isSubmitting || !content.trim()}
-            className="w-full bg-white text-zinc-900 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2"
+            className="w-full bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg"
           >
-            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
             Add Note
           </button>
         </form>
       </div>
 
       {/* Notes List */}
-      <div className="w-full md:w-2/3 flex flex-col gap-3 overflow-y-auto hide-scrollbar">
+      <div className="w-full md:w-2/3 flex flex-col gap-3 overflow-y-auto hide-scrollbar pb-6">
         {notes.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-500">
+          <div className="flex-1 flex flex-col items-center justify-center text-primary-900/60 font-medium">
             <AlignLeft className="w-12 h-12 mb-4 opacity-50" />
             <p>No notes yet.</p>
           </div>
         ) : (
           notes.map((note) => (
-            <div key={note.id} className="flex items-start gap-4 p-4 bg-indigo-950/20 rounded-xl border border-indigo-900/30">
-              <div className="mt-1 p-2 bg-indigo-950/50 rounded-lg border border-indigo-900/50">
+            <div key={note.id} className="flex items-start gap-4 p-5 bg-white/30 backdrop-blur-md rounded-2xl border border-white/50 shadow-md transition-all hover:bg-white/40">
+              <div className="mt-0.5 p-2.5 bg-white/60 rounded-xl shadow-sm border border-white/80">
                 {getIcon(note.type)}
               </div>
               <div className="flex-1">
                 {note.type === "URL" ? (
-                  <a href={note.content} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline break-all">
+                  <a href={note.content} target="_blank" rel="noreferrer" className="text-accent-700 font-extrabold hover:text-accent-500 hover:underline break-all text-lg drop-shadow-sm">
                     {note.content}
                   </a>
                 ) : note.type === "LOCATION" ? (
-                  <div className="text-zinc-200 font-medium flex items-center gap-2">
+                  <div className="text-primary-950 font-bold flex items-center gap-3 text-lg drop-shadow-sm">
                     {note.content}
                     <a 
                       href={`https://maps.google.com/?q=${encodeURIComponent(note.content)}`} 
                       target="_blank" 
                       rel="noreferrer"
-                      className="text-xs text-indigo-400 hover:underline"
+                      className="text-xs font-bold bg-white/50 px-2 py-1 rounded-md text-accent-700 hover:bg-white border border-white transition-colors shadow-sm"
                     >
-                      (Open in Maps)
+                      Open in Maps
                     </a>
                   </div>
                 ) : (
-                  <p className="text-zinc-300 whitespace-pre-wrap">{note.content}</p>
+                  <p className="text-primary-950 font-medium whitespace-pre-wrap leading-relaxed text-base">{note.content}</p>
                 )}
               </div>
             </div>

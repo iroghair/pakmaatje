@@ -5,26 +5,26 @@ import { Backpack } from "lucide-react";
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden bg-zinc-950">
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden bg-transparent">
       {/* Background decoration */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-900/20 blur-[120px]" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/20 blur-[120px]" />
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-white/20 blur-[120px]" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-accent-500/20 blur-[120px]" />
 
-      <div className="w-full max-w-md bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-3xl p-8 relative z-10 shadow-2xl">
+      <div className="w-full max-w-md bg-white/20 backdrop-blur-xl border border-white/50 rounded-3xl p-8 relative z-10 shadow-2xl">
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-analogous1-500 flex items-center justify-center shadow-lg shadow-primary-500/20">
             <Backpack className="w-8 h-8 text-white" />
           </div>
         </div>
         
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold tracking-tight mb-2 text-zinc-50">Packmate</h1>
-          <p className="text-zinc-400">Collaborative packing lists & projects</p>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-primary-950 drop-shadow-sm">Packmate</h1>
+          <p className="text-primary-900/80 font-medium">Collaborative packing lists & projects</p>
         </div>
 
         <button
           onClick={() => signIn("google", { callbackUrl: "/" })}
-          className="w-full bg-white text-zinc-900 hover:bg-zinc-200 transition-colors font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-3"
+          className="w-full bg-white text-black hover:bg-gray-100 transition-colors font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 shadow-md border border-gray-200"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -47,7 +47,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        <p className="mt-8 text-center text-xs text-zinc-500">
+        <p className="mt-8 text-center text-xs font-bold text-primary-900/60 uppercase tracking-wide">
           Admin approval is required to access your dashboard.
         </p>
       </div>

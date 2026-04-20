@@ -164,10 +164,10 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
             const totalPacked = category.items.reduce((sum: number, i: any) => sum + i.packedCount, 0);
 
             return (
-              <div key={category.id} className="flex-shrink-0 w-80 max-h-full flex flex-col bg-zinc-950/50 rounded-xl border border-zinc-800">
-                <div className="p-3 border-b border-zinc-800 flex flex-col gap-1 sticky top-0 bg-zinc-950/90 backdrop-blur-md rounded-t-xl z-10">
+              <div key={category.id} className="flex-shrink-0 w-80 max-h-full flex flex-col bg-white/20 backdrop-blur-md shadow-xl rounded-2xl border border-white/40">
+                <div className="p-3 border-b border-white/40 flex flex-col gap-1 sticky top-0 bg-white/30 backdrop-blur-xl rounded-t-2xl z-10">
                   <div className="flex items-center justify-between group/cat">
-                    <h3 className="font-semibold text-zinc-100">{category.name}</h3>
+                    <h3 className="font-extrabold text-primary-950 drop-shadow-sm">{category.name}</h3>
                     <button 
                       onClick={async () => {
                         const newName = prompt("Rename category:", category.name);
@@ -183,17 +183,17 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                           body: JSON.stringify({ categoryId: category.id, name: newName }),
                         });
                       }}
-                      className="opacity-0 group-hover/cat:opacity-100 text-zinc-500 hover:text-white transition-opacity"
+                      className="opacity-0 group-hover/cat:opacity-100 text-primary-800 hover:text-primary-950 transition-opacity"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] font-medium text-zinc-500">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-primary-900/70 uppercase tracking-wider">
                     <span>Total: {totalQty}</span>
                     <span>•</span>
-                    <span className="text-yellow-500/80">Staged: {totalStaged}</span>
+                    <span className="text-analogous2-600 drop-shadow-sm">Staged: {totalStaged}</span>
                     <span>•</span>
-                    <span className="text-green-500/80">Packed: {totalPacked}</span>
+                    <span className="text-green-700 drop-shadow-sm">Packed: {totalPacked}</span>
                   </div>
                 </div>
                 
@@ -214,31 +214,31 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                className={`group flex flex-col gap-2 p-3 mb-2 rounded-lg border transition-all ${
+                                className={`group flex flex-col gap-2 p-3 mb-2 rounded-xl border transition-all ${
                                   snapshot.isDragging 
-                                    ? "bg-zinc-800 border-indigo-500/50 shadow-xl shadow-indigo-900/20 rotate-2 scale-105" 
-                                    : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                                    ? "bg-white border-primary-500/50 shadow-2xl rotate-2 scale-105 z-50" 
+                                    : "bg-white/70 backdrop-blur-sm border-white/50 hover:border-white/80 shadow-sm"
                                 }`}
                               >
                                 <div className="flex items-center gap-3">
-                                  <div {...provided.dragHandleProps} className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing">
+                                  <div {...provided.dragHandleProps} className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
                                     <GripVertical className="w-4 h-4" />
                                   </div>
                                   
                                   {item.quantity === 1 ? (
                                     <button 
                                       onClick={() => handleToggleSingle(item, category.id)}
-                                      className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border font-mono text-xs font-bold transition-colors ${status.colors}`}
+                                      className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center border font-mono text-xs font-bold transition-colors ${status.colors}`}
                                     >
                                       {status.icon}
                                     </button>
                                   ) : (
-                                    <div className={`shrink-0 px-1.5 py-0.5 rounded border text-[10px] font-bold font-mono transition-colors ${status.colors}`}>
+                                    <div className={`shrink-0 px-1.5 py-0.5 rounded-md border text-[10px] font-bold font-mono transition-colors ${status.colors}`}>
                                       {item.packedCount}/{item.quantity}
                                     </div>
                                   )}
 
-                                  <span className={`flex-1 text-sm font-medium ${item.packedCount === item.quantity ? 'line-through text-zinc-500' : 'text-zinc-200'}`}>
+                                  <span className={`flex-1 text-sm font-bold ${item.packedCount === item.quantity ? 'line-through text-gray-400' : 'text-gray-900'}`}>
                                     {item.name}
                                   </span>
 
@@ -259,7 +259,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                                       
                                       updateItemAPI(item, category.id, { name: newName, quantity: newQty, stagedCount: newStaged, packedCount: newPacked });
                                     }}
-                                    className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity"
+                                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-800 transition-opacity"
                                   >
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </button>
@@ -267,22 +267,22 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
 
                                 {/* Multi-Item Counter Panel */}
                                 {item.quantity > 1 && (
-                                  <div className="flex items-center gap-2 mt-1 text-xs bg-zinc-950 p-2 rounded-lg border border-zinc-800/50">
+                                  <div className="flex items-center gap-2 mt-1 text-xs bg-white/50 border border-white/60 p-2 rounded-lg shadow-inner">
                                     <div className="flex-1 flex items-center justify-between">
-                                      <span className="text-yellow-500/90 font-medium">Staged</span>
-                                      <div className="flex items-center gap-2 text-zinc-300">
-                                        <button onClick={() => handleUpdateCount(item, category.id, 'stagedCount', -1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">-</button>
+                                      <span className="text-analogous2-600 font-bold uppercase tracking-wide text-[10px]">Staged</span>
+                                      <div className="flex items-center gap-2 text-gray-700 font-bold">
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'stagedCount', -1)} className="w-5 h-5 flex items-center justify-center bg-white hover:bg-gray-100 border border-gray-200 rounded-md shadow-sm">-</button>
                                         <span className="w-3 text-center">{item.stagedCount}</span>
-                                        <button onClick={() => handleUpdateCount(item, category.id, 'stagedCount', 1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">+</button>
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'stagedCount', 1)} className="w-5 h-5 flex items-center justify-center bg-white hover:bg-gray-100 border border-gray-200 rounded-md shadow-sm">+</button>
                                       </div>
                                     </div>
-                                    <div className="w-px h-6 bg-zinc-800"></div>
+                                    <div className="w-px h-6 bg-gray-300"></div>
                                     <div className="flex-1 flex items-center justify-between">
-                                      <span className="text-green-500/90 font-medium">Packed</span>
-                                      <div className="flex items-center gap-2 text-zinc-300">
-                                        <button onClick={() => handleUpdateCount(item, category.id, 'packedCount', -1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">-</button>
+                                      <span className="text-green-600 font-bold uppercase tracking-wide text-[10px]">Packed</span>
+                                      <div className="flex items-center gap-2 text-gray-700 font-bold">
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'packedCount', -1)} className="w-5 h-5 flex items-center justify-center bg-white hover:bg-gray-100 border border-gray-200 rounded-md shadow-sm">-</button>
                                         <span className="w-3 text-center">{item.packedCount}</span>
-                                        <button onClick={() => handleUpdateCount(item, category.id, 'packedCount', 1)} className="w-4 h-4 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded">+</button>
+                                        <button onClick={() => handleUpdateCount(item, category.id, 'packedCount', 1)} className="w-5 h-5 flex items-center justify-center bg-white hover:bg-gray-100 border border-gray-200 rounded-md shadow-sm">+</button>
                                       </div>
                                     </div>
                                   </div>
@@ -311,10 +311,10 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                   )}
                 </Droppable>
 
-                <div className="p-2 border-t border-zinc-800 mt-auto">
+                <div className="p-2 border-t border-white/40 mt-auto">
                   <button 
                     onClick={() => handleCreateItem(category.id)}
-                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold text-primary-950 bg-white/20 hover:bg-white/40 transition-colors shadow-sm"
                   >
                     <Plus className="w-4 h-4" /> Add Item
                   </button>
@@ -326,7 +326,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
           {/* Add Category Button */}
           <button 
             onClick={handleCreateCategory}
-            className="flex-shrink-0 w-80 h-16 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/50 transition-all"
+            className="flex-shrink-0 w-80 h-16 flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/50 text-primary-950 font-bold bg-white/10 hover:bg-white/30 backdrop-blur-md shadow-xl transition-all"
           >
             <Plus className="w-5 h-5" /> Add Category
           </button>

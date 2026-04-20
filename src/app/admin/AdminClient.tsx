@@ -19,34 +19,34 @@ export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
   };
 
   return (
-    <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 overflow-hidden">
+    <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/50 overflow-hidden shadow-2xl">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b border-zinc-800 bg-zinc-900">
-            <th className="p-4 text-sm font-semibold text-zinc-400">User</th>
-            <th className="p-4 text-sm font-semibold text-zinc-400">Email</th>
-            <th className="p-4 text-sm font-semibold text-zinc-400">Status</th>
-            <th className="p-4 text-sm font-semibold text-zinc-400">Role</th>
-            <th className="p-4 text-sm font-semibold text-zinc-400">Actions</th>
+          <tr className="border-b border-white/40 bg-white/30 backdrop-blur-md">
+            <th className="p-4 text-sm font-extrabold text-primary-950 uppercase tracking-wide">User</th>
+            <th className="p-4 text-sm font-extrabold text-primary-950 uppercase tracking-wide">Email</th>
+            <th className="p-4 text-sm font-extrabold text-primary-950 uppercase tracking-wide">Status</th>
+            <th className="p-4 text-sm font-extrabold text-primary-950 uppercase tracking-wide">Role</th>
+            <th className="p-4 text-sm font-extrabold text-primary-950 uppercase tracking-wide">Actions</th>
           </tr>
         </thead>
         <tbody>
           {users.map(user => (
-            <tr key={user.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition">
+            <tr key={user.id} className="border-b border-white/30 hover:bg-white/30 transition-colors">
               <td className="p-4">
-                <div className="font-medium text-zinc-200">{user.name || "Unknown"}</div>
+                <div className="font-bold text-primary-950">{user.name || "Unknown"}</div>
               </td>
-              <td className="p-4 text-zinc-400 text-sm">{user.email}</td>
+              <td className="p-4 text-primary-900/80 font-medium text-sm">{user.email}</td>
               <td className="p-4">
-                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${
-                  user.status === 'APPROVED' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
+                <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-lg border shadow-sm ${
+                  user.status === 'APPROVED' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-white text-analogous2-600 border-gray-200'
                 }`}>
                   {user.status}
                 </span>
               </td>
               <td className="p-4">
-                <div className="flex items-center gap-2 text-sm text-zinc-400">
-                  {user.role === 'ADMIN' ? <Shield className="w-4 h-4 text-indigo-400" /> : <UserIcon className="w-4 h-4" />}
+                <div className="flex items-center gap-2 text-sm font-bold text-primary-900/80">
+                  {user.role === 'ADMIN' ? <Shield className="w-4 h-4 text-accent-600" /> : <UserIcon className="w-4 h-4" />}
                   {user.role}
                 </div>
               </td>
@@ -55,14 +55,14 @@ export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
                   {user.status === 'PENDING' ? (
                     <button 
                       onClick={() => handleUpdate(user.id, { status: "APPROVED" })}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg text-xs font-semibold transition"
+                      className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white hover:bg-green-600 rounded-xl text-xs font-bold shadow-md transition"
                     >
                       <Check className="w-3 h-3" /> Approve
                     </button>
                   ) : (
                     <button 
                       onClick={() => handleUpdate(user.id, { status: "PENDING" })}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white rounded-lg text-xs font-semibold transition"
+                      className="flex items-center gap-1 px-3 py-1.5 bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 rounded-xl text-xs font-bold shadow-sm transition"
                     >
                       <X className="w-3 h-3" /> Revoke
                     </button>
@@ -70,7 +70,7 @@ export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
                   {user.role === 'USER' && (
                     <button 
                       onClick={() => handleUpdate(user.id, { role: "ADMIN" })}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded-lg text-xs font-semibold transition"
+                      className="flex items-center gap-1 px-3 py-1.5 bg-accent-500 text-white hover:bg-accent-600 rounded-xl text-xs font-bold shadow-md transition"
                     >
                       Make Admin
                     </button>
