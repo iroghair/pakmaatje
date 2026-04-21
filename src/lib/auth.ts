@@ -1,11 +1,11 @@
-import { NextAuthOptions } from "next-auth"
+import { type NextAuthOptions } from "next-auth"
+import { type Adapter } from "next-auth/adapters"
 import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "./prisma"
 
 export const authOptions: NextAuthOptions = {
-  // @ts-ignore - PrismaAdapter types mismatch slightly with NextAuthOptions sometimes
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -16,9 +16,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, user }) {
       if (session.user) {
         session.user.id = user.id
-        // @ts-ignore - Add custom fields to session
         session.user.role = user.role
-        // @ts-ignore
         session.user.status = user.status
       }
       return session

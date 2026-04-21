@@ -6,6 +6,7 @@ import { ListIcon, FileText, Plus, ArrowLeft, Edit2, Download, Copy, RefreshCcw 
 import { PackingListBoard } from "./PackingListBoard";
 import { NotesBoard } from "./NotesBoard";
 import Link from "next/link";
+import { useTranslations } from "@/components/LocaleProvider";
 
 // Type definitions that match Prisma's output with includes
 type ItemWithAssignee = Item & { assignee: Partial<User> | null };
@@ -23,8 +24,9 @@ export function ProjectClient({
 }: { 
   initialProject: FullProject, 
   users: Partial<User>[],
-  currentUser: any
+  currentUser: Pick<User, "id" | "role">
 }) {
+  const messages = useTranslations();
   const [project, setProject] = useState(initialProject);
   const [activeTab, setActiveTab] = useState<"lists" | "notes">("lists");
   const [activeListId, setActiveListId] = useState<string | null>(
@@ -34,9 +36,9 @@ export function ProjectClient({
   const canEditProject = project.ownerId === currentUser.id || currentUser.role === "ADMIN";
 
   const handleEditProject = async () => {
-    const newName = prompt("Project Name:", project.name);
+    const newName = prompt(messages.project.prompts.projectName, project.name);
     if (!newName) return;
-    const newDesc = prompt("Project Description:", project.description || "");
+    const newDesc = prompt(messages.project.prompts.projectDescription, project.description || "");
     
     // Optimistic UI
     setProject({ ...project, name: newName, description: newDesc });
@@ -49,7 +51,7 @@ export function ProjectClient({
   };
 
   const handleCreateList = async () => {
-    const name = prompt("Enter list name (e.g., Summer Gear):");
+    const name = prompt(messages.project.prompts.createList);
     if (!name) return;
 
     const res = await fetch(`/api/projects/${project.id}/lists`, {
@@ -72,7 +74,7 @@ export function ProjectClient({
 
   const handleRenameList = async () => {
     if (!activeList) return;
-    const newName = prompt("Rename list:", activeList.name);
+    const newName = prompt(messages.project.prompts.renameList, activeList.name);
     if (!newName || newName === activeList.name) return;
 
     setProject(prev => ({
@@ -89,7 +91,7 @@ export function ProjectClient({
 
   const handleDuplicateList = async () => {
     if (!activeList) return;
-    const newName = prompt("Name for duplicated list:", `${activeList.name} (Copy)`);
+    const newName = prompt(messages.project.prompts.duplicateList, `${activeList.name}${messages.project.prompts.duplicateSuffix}`);
     if (!newName) return;
 
     const res = await fetch(`/api/projects/${project.id}/lists/${activeList.id}/duplicate`, {
@@ -110,7 +112,7 @@ export function ProjectClient({
 
   const handleResetList = async () => {
     if (!activeList) return;
-    const confirmReset = window.confirm("Are you sure you want to unstage and unpack everything in this list? This cannot be undone.");
+    const confirmReset = window.confirm(messages.project.prompts.resetConfirm);
     if (!confirmReset) return;
 
     // Optimistic UI
@@ -159,7 +161,7 @@ export function ProjectClient({
           target="_blank"
           className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md border border-white/40 shadow-sm hover:bg-white/30 rounded-xl text-sm font-bold transition-colors text-primary-950"
         >
-          <Download className="w-4 h-4" /> Export
+          <Download className="w-4 h-4" /> {messages.common.export}
         </a>
       </header>
 
@@ -171,7 +173,7 @@ export function ProjectClient({
             activeTab === "lists" ? "border-primary-500 text-primary-950" : "border-transparent text-primary-900/60 hover:text-primary-900/90"
           }`}
         >
-          <ListIcon className="w-4 h-4" /> Lists
+          <ListIcon className="w-4 h-4" /> {messages.project.listsTab}
         </button>
         <button
           onClick={() => setActiveTab("notes")}
@@ -179,7 +181,7 @@ export function ProjectClient({
             activeTab === "notes" ? "border-primary-500 text-primary-950" : "border-transparent text-primary-900/60 hover:text-primary-900/90"
           }`}
         >
-          <FileText className="w-4 h-4" /> Notes & Links
+          <FileText className="w-4 h-4" /> {messages.project.notesTab}
         </button>
       </div>
 
@@ -202,7 +204,7 @@ export function ProjectClient({
               onClick={handleCreateList}
               className="px-4 py-2 rounded-xl text-sm font-bold bg-white/20 border-2 border-dashed border-primary-900/30 text-primary-900 hover:text-primary-950 hover:bg-white/30 transition-colors flex items-center gap-2 whitespace-nowrap"
             >
-              <Plus className="w-4 h-4" /> New List
+              <Plus className="w-4 h-4" /> {messages.project.newList}
             </button>
           </div>
 
@@ -213,13 +215,13 @@ export function ProjectClient({
               <div className="flex flex-wrap items-center gap-2 mb-4 px-2 pb-3 border-b border-white/20 shrink-0">
                 <h2 className="text-xl font-extrabold text-primary-950 mr-2 drop-shadow-sm">{activeList.name}</h2>
                 <button onClick={handleRenameList} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/30 hover:bg-white/50 border border-white/50 rounded-xl text-xs font-bold text-primary-950 shadow-sm transition-all">
-                  <Edit2 className="w-3.5 h-3.5" /> Rename
+                  <Edit2 className="w-3.5 h-3.5" /> {messages.common.rename}
                 </button>
                 <button onClick={handleDuplicateList} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/30 hover:bg-white/50 border border-white/50 rounded-xl text-xs font-bold text-primary-950 shadow-sm transition-all">
-                  <Copy className="w-3.5 h-3.5" /> Duplicate
+                  <Copy className="w-3.5 h-3.5" /> {messages.common.duplicate}
                 </button>
                 <button onClick={handleResetList} className="flex items-center gap-1.5 px-3 py-1.5 bg-analogous1-500/20 hover:bg-analogous1-500/30 border border-analogous1-500/40 rounded-xl text-xs font-bold text-analogous1-700 shadow-sm transition-all ml-auto">
-                  <RefreshCcw className="w-3.5 h-3.5" /> Reset Packing
+                  <RefreshCcw className="w-3.5 h-3.5" /> {messages.project.resetPacking}
                 </button>
               </div>
               <PackingListBoard 
@@ -238,7 +240,7 @@ export function ProjectClient({
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-primary-900/60">
               <ListIcon className="w-12 h-12 mb-4 opacity-50" />
-              <p className="font-medium">No lists yet. Create one to get started.</p>
+              <p className="font-medium">{messages.project.noLists}</p>
             </div>
           )}
         </div>

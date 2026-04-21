@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Note } from "@prisma/client";
 import { Plus, Link as LinkIcon, MapPin, AlignLeft, Loader2 } from "lucide-react";
+import { useTranslations } from "@/components/LocaleProvider";
 
-export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], projectId: string }) {
+export function NotesBoard({ initialNotes, projectId }: { initialNotes: Note[], projectId: string }) {
+  const messages = useTranslations();
   const [notes, setNotes] = useState(initialNotes);
   const [content, setContent] = useState("");
   const [type, setType] = useState("TEXT");
@@ -38,19 +41,23 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
     <div className="flex flex-col md:flex-row gap-6 w-full h-full">
       {/* Create Note Form */}
       <div className="w-full md:w-1/3 flex flex-col bg-white/20 backdrop-blur-md rounded-2xl shadow-xl border border-white/40 p-5">
-        <h3 className="font-extrabold text-xl text-primary-950 mb-4 drop-shadow-sm">Add a Note</h3>
+        <h3 className="font-extrabold text-xl text-primary-950 mb-4 drop-shadow-sm">{messages.notesBoard.addNoteTitle}</h3>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-300 shadow-inner">
-            {["TEXT", "URL", "LOCATION"].map((t) => (
+            {[
+              { value: "TEXT", label: messages.notesBoard.textType },
+              { value: "URL", label: messages.notesBoard.urlType },
+              { value: "LOCATION", label: messages.notesBoard.locationType },
+            ].map((option) => (
               <button
-                key={t}
+                key={option.value}
                 type="button"
-                onClick={() => setType(t)}
+                onClick={() => setType(option.value)}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm ${
-                  type === t ? "bg-white text-black border border-gray-200" : "text-gray-500 hover:text-black hover:bg-white/50 border border-transparent shadow-none"
+                  type === option.value ? "bg-white text-black border border-gray-200" : "text-gray-500 hover:text-black hover:bg-white/50 border border-transparent shadow-none"
                 }`}
               >
-                {t}
+                {option.label}
               </button>
             ))}
           </div>
@@ -58,9 +65,9 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={
-              type === "URL" ? "https://..." : 
-              type === "LOCATION" ? "Coordinates or Place Name..." : 
-              "Write your notes here..."
+              type === "URL" ? messages.notesBoard.placeholders.url : 
+              type === "LOCATION" ? messages.notesBoard.placeholders.location : 
+              messages.notesBoard.placeholders.text
             }
             className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-black placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all resize-none h-32 shadow-inner"
           />
@@ -70,7 +77,7 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
             className="w-full bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg"
           >
             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
-            Add Note
+            {messages.notesBoard.addNote}
           </button>
         </form>
       </div>
@@ -80,7 +87,7 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
         {notes.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-primary-900/60 font-medium">
             <AlignLeft className="w-12 h-12 mb-4 opacity-50" />
-            <p>No notes yet.</p>
+            <p>{messages.notesBoard.noNotes}</p>
           </div>
         ) : (
           notes.map((note) => (
@@ -102,7 +109,7 @@ export function NotesBoard({ initialNotes, projectId }: { initialNotes: any[], p
                       rel="noreferrer"
                       className="text-xs font-bold bg-white/50 px-2 py-1 rounded-md text-accent-700 hover:bg-white border border-white transition-colors shadow-sm"
                     >
-                      Open in Maps
+                        {messages.notesBoard.openInMaps}
                     </a>
                   </div>
                 ) : (

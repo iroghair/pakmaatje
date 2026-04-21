@@ -3,8 +3,6 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ProjectClient } from "./ProjectClient";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

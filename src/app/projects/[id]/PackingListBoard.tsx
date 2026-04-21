@@ -1,27 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { Category, Item, PackingList, User } from "@prisma/client";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Plus, GripVertical, User as UserIcon, Edit2, Copy } from "lucide-react";
-import Image from "next/image";
+import { Plus, GripVertical, Edit2, Copy } from "lucide-react";
+import { useTranslations } from "@/components/LocaleProvider";
 
-type PackingListBoardProps = {
-  list: any; // Using any here to avoid complex type importing issues, but it matches ListWithCategories
-  projectId: string;
-  users: any[];
-  currentUser: any;
-  onListUpdated: (updatedList: any) => void;
+type BoardUser = Pick<User, "id" | "name" | "email" | "image">;
+type ItemWithAssignee = Item & { assignee: BoardUser | null };
+type CategoryWithItems = Category & { items: ItemWithAssignee[] };
+type ListWithCategories = PackingList & { categories: CategoryWithItems[] };
+type ItemUpdates = Partial<
+  Pick<ItemWithAssignee, "name" | "quantity" | "stagedCount" | "packedCount" | "categoryId" | "assigneeId">
+> & {
+  assignee?: BoardUser | null;
 };
 
-export function PackingListBoard({ list, projectId, users, currentUser, onListUpdated }: PackingListBoardProps) {
+type PackingListBoardProps = {
+  list: ListWithCategories;
+  projectId: string;
+  users: BoardUser[];
+  onListUpdated: (updatedList: ListWithCategories) => void;
+};
+
+export function PackingListBoard({ list, projectId, users, onListUpdated }: PackingListBoardProps) {
+  const messages = useTranslations();
   const [localList, setLocalList] = useState(list);
 
-  const updateItemAPI = async (item: any, categoryId: string, updates: any) => {
-    const updatedCategories = localList.categories.map((c: any) => {
+  const updateItemAPI = async (item: ItemWithAssignee, categoryId: string, updates: ItemUpdates) => {
+    const updatedCategories = localList.categories.map((c) => {
       if (c.id === categoryId) {
         return {
           ...c,
-          items: c.items.map((i: any) => i.id === item.id ? { ...i, ...updates } : i)
+          items: c.items.map((i) => i.id === item.id ? { ...i, ...updates } : i)
         };
       }
       return c;
@@ -37,7 +48,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
   };
 
   const handleCreateCategory = async () => {
-    const name = prompt("Enter category name (e.g., Sleeping, Tools):");
+    const name = prompt(messages.packing.prompts.createCategory);
     if (!name) return;
 
     const res = await fetch(`/api/projects/${projectId}/lists/${list.id}/categories`, {
@@ -58,7 +69,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
   };
 
   const handleCreateItem = async (categoryId: string) => {
-    const name = prompt("Enter item name (e.g. '4x sleeping bag' or 'tent'):");
+    const name = prompt(messages.packing.prompts.createItem);
     if (!name) return;
 
     const res = await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
@@ -69,7 +80,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
 
     if (res.ok) {
       const newItem = await res.json();
-      const updatedCategories = localList.categories.map((c: any) => {
+      const updatedCategories = localList.categories.map((c) => {
         if (c.id === categoryId) {
           return { ...c, items: [...c.items, newItem] };
         }
@@ -81,7 +92,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     }
   };
 
-  const handleToggleSingle = async (item: any, categoryId: string) => {
+  const handleToggleSingle = async (item: ItemWithAssignee, categoryId: string) => {
     let newStaged = item.stagedCount;
     let newPacked = item.packedCount;
 
@@ -96,7 +107,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     updateItemAPI(item, categoryId, { stagedCount: newStaged, packedCount: newPacked });
   };
 
-  const handleUpdateCount = async (item: any, categoryId: string, field: 'stagedCount'|'packedCount', delta: number) => {
+  const handleUpdateCount = async (item: ItemWithAssignee, categoryId: string, field: 'stagedCount'|'packedCount', delta: number) => {
     let newStaged = item.stagedCount;
     let newPacked = item.packedCount;
 
@@ -108,8 +119,8 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     updateItemAPI(item, categoryId, { stagedCount: newStaged, packedCount: newPacked });
   };
 
-  const handleAssigneeChange = async (item: any, categoryId: string, assigneeId: string | null) => {
-    const assigneeObj = assigneeId ? users.find(u => u.id === assigneeId) : null;
+  const handleAssigneeChange = async (item: ItemWithAssignee, categoryId: string, assigneeId: string | null) => {
+    const assigneeObj = assigneeId ? users.find((u) => u.id === assigneeId) ?? null : null;
     updateItemAPI(item, categoryId, { assigneeId: assigneeId || null, assignee: assigneeObj });
   };
 
@@ -120,10 +131,10 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
     // Deep copy categories
-    const newCategories = JSON.parse(JSON.stringify(localList.categories));
+    const newCategories: CategoryWithItems[] = JSON.parse(JSON.stringify(localList.categories));
     
-    const sourceCatIndex = newCategories.findIndex((c: any) => c.id === source.droppableId);
-    const destCatIndex = newCategories.findIndex((c: any) => c.id === destination.droppableId);
+    const sourceCatIndex = newCategories.findIndex((c) => c.id === source.droppableId);
+    const destCatIndex = newCategories.findIndex((c) => c.id === destination.droppableId);
     
     const sourceItems = newCategories[sourceCatIndex].items;
     const destItems = newCategories[destCatIndex].items;
@@ -148,7 +159,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     }
   };
 
-  const getStatusDisplay = (item: any) => {
+  const getStatusDisplay = (item: ItemWithAssignee) => {
     if (item.packedCount === item.quantity) return { icon: "X", colors: "text-green-500 border-green-500/50 bg-green-500/10" };
     if (item.stagedCount > 0 || item.packedCount > 0) return { icon: "-", colors: "text-yellow-500 border-yellow-500/50 bg-yellow-500/10" };
     return { icon: "O", colors: "text-zinc-500 border-zinc-600" };
@@ -158,10 +169,10 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
     <div className="flex-1 overflow-x-auto overflow-y-hidden hide-scrollbar">
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex items-start gap-4 h-full pb-4">
-          {localList.categories.map((category: any) => {
-            const totalQty = category.items.reduce((sum: number, i: any) => sum + i.quantity, 0);
-            const totalStaged = category.items.reduce((sum: number, i: any) => sum + i.stagedCount, 0);
-            const totalPacked = category.items.reduce((sum: number, i: any) => sum + i.packedCount, 0);
+          {localList.categories.map((category) => {
+            const totalQty = category.items.reduce((sum, i) => sum + i.quantity, 0);
+            const totalStaged = category.items.reduce((sum, i) => sum + i.stagedCount, 0);
+            const totalPacked = category.items.reduce((sum, i) => sum + i.packedCount, 0);
 
             return (
               <div key={category.id} className="flex-shrink-0 w-80 max-h-full flex flex-col bg-white/20 backdrop-blur-md shadow-xl rounded-2xl border border-white/40">
@@ -171,10 +182,10 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                     <div className="flex items-center gap-1 opacity-0 group-hover/cat:opacity-100 transition-opacity">
                       <button 
                         onClick={async () => {
-                          const newName = prompt("Rename category:", category.name);
+                          const newName = prompt(messages.packing.prompts.renameCategory, category.name);
                           if (!newName || newName === category.name) return;
                           
-                          const newCategories = localList.categories.map((c: any) => c.id === category.id ? { ...c, name: newName } : c);
+                          const newCategories = localList.categories.map((c) => c.id === category.id ? { ...c, name: newName } : c);
                           setLocalList({ ...localList, categories: newCategories });
                           onListUpdated({ ...localList, categories: newCategories });
                           
@@ -185,13 +196,13 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                           });
                         }}
                         className="text-primary-800 hover:text-primary-950 p-1"
-                        title="Rename Category"
+                        title={messages.packing.renameCategoryTitle}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={async () => {
-                          const newName = prompt("Name for duplicated category:", `${category.name} (Copy)`);
+                          const newName = prompt(messages.packing.prompts.duplicateCategory, `${category.name}${messages.project.prompts.duplicateSuffix}`);
                           if (!newName) return;
                           
                           const res = await fetch(`/api/projects/${projectId}/lists/${list.id}/categories/${category.id}/duplicate`, {
@@ -208,18 +219,18 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                           }
                         }}
                         className="text-primary-800 hover:text-primary-950 p-1"
-                        title="Duplicate Category"
+                        title={messages.packing.duplicateCategoryTitle}
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-bold text-primary-900/70 uppercase tracking-wider">
-                    <span>Total: {totalQty}</span>
+                    <span>{messages.packing.total}: {totalQty}</span>
                     <span>•</span>
-                    <span className="text-analogous2-600 drop-shadow-sm">Staged: {totalStaged}</span>
+                    <span className="text-analogous2-600 drop-shadow-sm">{messages.packing.staged}: {totalStaged}</span>
                     <span>•</span>
-                    <span className="text-green-700 drop-shadow-sm">Packed: {totalPacked}</span>
+                    <span className="text-green-700 drop-shadow-sm">{messages.packing.packed}: {totalPacked}</span>
                   </div>
                 </div>
                 
@@ -232,7 +243,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                         snapshot.isDraggingOver ? "bg-indigo-900/10" : ""
                       }`}
                     >
-                      {category.items.map((item: any, index: number) => {
+                      {category.items.map((item, index) => {
                         const status = getStatusDisplay(item);
                         return (
                           <Draggable key={item.id} draggableId={item.id} index={index}>
@@ -270,10 +281,10 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
 
                                   <button 
                                     onClick={() => {
-                                      const newName = prompt("Rename item:", item.name);
+                                      const newName = prompt(messages.packing.prompts.renameItem, item.name);
                                       if (!newName || newName === item.name) return;
 
-                                      const qtyStr = prompt("Quantity:", item.quantity.toString());
+                                      const qtyStr = prompt(messages.packing.prompts.quantity, item.quantity.toString());
                                       const newQty = qtyStr ? parseInt(qtyStr, 10) : item.quantity;
                                       if (isNaN(newQty) || newQty < 1) return;
 
@@ -295,7 +306,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                                 {item.quantity > 1 && (
                                   <div className="flex items-center gap-2 mt-1 text-xs bg-white/50 border border-white/60 p-2 rounded-lg shadow-inner">
                                     <div className="flex-1 flex items-center justify-between">
-                                      <span className="text-analogous2-600 font-bold uppercase tracking-wide text-[10px]">Staged</span>
+                                      <span className="text-analogous2-600 font-bold uppercase tracking-wide text-[10px]">{messages.packing.staged}</span>
                                       <div className="flex items-center gap-2 text-gray-700 font-bold">
                                         <button onClick={() => handleUpdateCount(item, category.id, 'stagedCount', -1)} className="w-5 h-5 flex items-center justify-center bg-white hover:bg-gray-100 border border-gray-200 rounded-md shadow-sm">-</button>
                                         <span className="w-3 text-center">{item.stagedCount}</span>
@@ -304,7 +315,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                                     </div>
                                     <div className="w-px h-6 bg-gray-300"></div>
                                     <div className="flex-1 flex items-center justify-between">
-                                      <span className="text-green-600 font-bold uppercase tracking-wide text-[10px]">Packed</span>
+                                      <span className="text-green-600 font-bold uppercase tracking-wide text-[10px]">{messages.packing.packed}</span>
                                       <div className="flex items-center gap-2 text-gray-700 font-bold">
                                         <button onClick={() => handleUpdateCount(item, category.id, 'packedCount', -1)} className="w-5 h-5 flex items-center justify-center bg-white hover:bg-gray-100 border border-gray-200 rounded-md shadow-sm">-</button>
                                         <span className="w-3 text-center">{item.packedCount}</span>
@@ -321,7 +332,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                                     onChange={(e) => handleAssigneeChange(item, category.id, e.target.value)}
                                     className="bg-transparent text-xs text-zinc-500 hover:text-zinc-300 focus:outline-none cursor-pointer text-right appearance-none"
                                   >
-                                    <option value="">Unassigned</option>
+                                    <option value="">{messages.common.unassigned}</option>
                                     {users.map(u => (
                                       <option key={u.id} value={u.id}>{u.name || u.email}</option>
                                     ))}
@@ -342,7 +353,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
                     onClick={() => handleCreateItem(category.id)}
                     className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold text-primary-950 bg-white/20 hover:bg-white/40 transition-colors shadow-sm"
                   >
-                    <Plus className="w-4 h-4" /> Add Item
+                    <Plus className="w-4 h-4" /> {messages.packing.addItem}
                   </button>
                 </div>
               </div>
@@ -354,7 +365,7 @@ export function PackingListBoard({ list, projectId, users, currentUser, onListUp
             onClick={handleCreateCategory}
             className="flex-shrink-0 w-80 h-16 flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/50 text-primary-950 font-bold bg-white/10 hover:bg-white/30 backdrop-blur-md shadow-xl transition-all"
           >
-            <Plus className="w-5 h-5" /> Add Category
+            <Plus className="w-5 h-5" /> {messages.packing.addCategory}
           </button>
         </div>
       </DragDropContext>

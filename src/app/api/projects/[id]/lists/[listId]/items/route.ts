@@ -5,14 +5,15 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string, listId: string }> }) {
   try {
-    const { id, listId } = await params;
+    await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user || session.user.status !== "APPROVED") {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    let { name, categoryId } = await req.json();
+    const { name: rawName, categoryId } = await req.json();
+    let name = rawName;
 
     if (!name || !categoryId) {
       return new NextResponse("Missing fields", { status: 400 });
@@ -46,7 +47,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string, listId: string }> }) {
   try {
-    const { id, listId } = await params;
+    await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user || session.user.status !== "APPROVED") {

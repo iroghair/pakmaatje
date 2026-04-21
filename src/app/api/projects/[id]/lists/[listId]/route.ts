@@ -3,14 +3,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string, listId: string }> }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ listId: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { id, listId } = await params;
+    const { listId } = await params;
     const { name } = await req.json();
 
     if (!name) {

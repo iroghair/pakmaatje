@@ -4,10 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { cookies } from "next/headers";
+import { getDictionary, LOCALE_COOKIE_NAME, resolveLocale } from "@/lib/i18n";
 import { AdminClient } from "./AdminClient";
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
+  const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE_NAME)?.value);
+  const messages = getDictionary(locale);
 
   if (!session?.user || session.user.role !== "ADMIN") {
     redirect("/");
@@ -24,8 +28,8 @@ export default async function AdminPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-primary-950 drop-shadow-sm">Admin Dashboard</h1>
-          <p className="text-sm text-primary-900/80 font-medium mt-1">Manage users and access control</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-primary-950 drop-shadow-sm">{messages.admin.title}</h1>
+          <p className="text-sm text-primary-900/80 font-medium mt-1">{messages.admin.description}</p>
         </div>
       </header>
 

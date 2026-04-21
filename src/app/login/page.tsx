@@ -2,8 +2,11 @@
 
 import { signIn } from "next-auth/react";
 import { Backpack } from "lucide-react";
+import { useTranslations } from "@/components/LocaleProvider";
 
 export default function LoginPage() {
+  const messages = useTranslations();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden bg-transparent">
       {/* Background decoration */}
@@ -19,7 +22,7 @@ export default function LoginPage() {
         
         <div className="text-center mb-10">
           <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-primary-950 drop-shadow-sm">Packmate</h1>
-          <p className="text-primary-900/80 font-medium">Collaborative packing lists & projects</p>
+          <p className="text-primary-900/80 font-medium">{messages.login.tagline}</p>
         </div>
 
         <button
@@ -44,11 +47,11 @@ export default function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Continue with Google
+          {messages.login.continueWithGoogle}
         </button>
 
         <p className="mt-8 text-center text-xs font-bold text-primary-900/60 uppercase tracking-wide">
-          Admin approval is required to access your dashboard.
+          {messages.login.approvalNotice}
         </p>
       </div>
     </main>

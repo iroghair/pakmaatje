@@ -3,9 +3,13 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Clock } from "lucide-react";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { getDictionary, LOCALE_COOKIE_NAME, resolveLocale } from "@/lib/i18n";
 
 export default async function PendingPage() {
   const session = await getServerSession(authOptions);
+  const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE_NAME)?.value);
+  const messages = getDictionary(locale);
 
   if (!session) {
     redirect("/login");
@@ -24,16 +28,16 @@ export default async function PendingPage() {
           </div>
         </div>
         
-        <h1 className="text-2xl font-extrabold tracking-tight mb-3 text-primary-950 drop-shadow-sm">Approval Pending</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight mb-3 text-primary-950 drop-shadow-sm">{messages.pending.title}</h1>
         <p className="text-primary-900/80 mb-8 font-medium">
-          Your account has been created, but it requires administrator approval before you can access projects and packing lists.
+          {messages.pending.description}
         </p>
 
         <Link
           href="/api/auth/signout"
           className="text-sm font-bold text-primary-900/60 hover:text-primary-950 transition-colors uppercase tracking-wide"
         >
-          Sign out and try another account
+          {messages.pending.signOut}
         </Link>
       </div>
     </main>

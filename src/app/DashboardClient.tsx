@@ -6,12 +6,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { Project } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "@/components/LocaleProvider";
 
 type ProjectWithCounts = Project & { _count: { lists: number; notes: number } };
 
-export function DashboardClient({ initialProjects, userId }: { initialProjects: ProjectWithCounts[], userId: string }) {
+export function DashboardClient({ initialProjects }: { initialProjects: ProjectWithCounts[] }) {
   const router = useRouter();
-  const [projects, setProjects] = useState(initialProjects);
+  const messages = useTranslations();
+  const [projects] = useState(initialProjects);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -53,7 +55,7 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
           <div className="w-12 h-12 rounded-full bg-white/40 shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <Plus className="w-6 h-6 text-primary-950" />
           </div>
-          <span className="font-semibold text-primary-950">New Project</span>
+          <span className="font-semibold text-primary-950">{messages.dashboard.newProject}</span>
         </button>
 
         {/* Project Cards */}
@@ -71,7 +73,7 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
               )}
               {project.isPrivate && (
                 <span className="absolute top-3 right-3 bg-white/50 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold text-primary-950 border border-white/40 shadow-sm">
-                  Private
+                  {messages.common.private}
                 </span>
               )}
             </div>
@@ -81,8 +83,8 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
                 <p className="text-sm text-primary-900/80 line-clamp-2 mb-4 font-medium">{project.description}</p>
               )}
               <div className="mt-auto flex items-center gap-4 text-xs text-primary-900/70 font-bold uppercase tracking-wide">
-                <span>{project._count.lists} Lists</span>
-                <span>{project._count.notes} Notes</span>
+                <span>{project._count.lists} {messages.common.lists}</span>
+                <span>{project._count.notes} {messages.common.notes}</span>
               </div>
             </div>
           </Link>
@@ -99,26 +101,26 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-2xl font-bold mb-6 text-primary-950">Create New Project</h2>
+            <h2 className="text-2xl font-bold mb-6 text-primary-950">{messages.dashboard.createProjectTitle}</h2>
             <form onSubmit={handleCreateProject} className="flex flex-col gap-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-bold text-primary-950 mb-1">Project Name</label>
+                <label htmlFor="name" className="block text-sm font-bold text-primary-950 mb-1">{messages.dashboard.projectName}</label>
                 <input 
                   type="text" 
                   id="name" 
                   name="name" 
                   required 
                   className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-inner transition-all"
-                  placeholder="e.g. Bikepacking 2026"
+                  placeholder={messages.dashboard.projectNamePlaceholder}
                 />
               </div>
               <div>
-                <label htmlFor="description" className="block text-sm font-bold text-primary-950 mb-1">Description (Optional)</label>
+                <label htmlFor="description" className="block text-sm font-bold text-primary-950 mb-1">{messages.dashboard.projectDescription}</label>
                 <textarea 
                   id="description" 
                   name="description" 
                   className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-inner transition-all resize-none h-24"
-                  placeholder="A short description of this project..."
+                  placeholder={messages.dashboard.projectDescriptionPlaceholder}
                 />
               </div>
               <div className="flex items-center gap-3 mt-2">
@@ -129,7 +131,7 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
                   className="w-5 h-5 rounded border-gray-300 bg-white text-primary-500 focus:ring-primary-500" 
                 />
                 <label htmlFor="isPrivate" className="text-sm font-medium text-primary-900">
-                  Make this project private (only visible to you)
+                  {messages.dashboard.privateProjectLabel}
                 </label>
               </div>
               <button 
@@ -138,9 +140,9 @@ export function DashboardClient({ initialProjects, userId }: { initialProjects: 
                 className="w-full mt-4 bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2"
               >
                 {isCreating ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Creating...</>
+                  <><Loader2 className="w-5 h-5 animate-spin" /> {messages.dashboard.creatingProject}</>
                 ) : (
-                  "Create Project"
+                  messages.dashboard.createProject
                 )}
               </button>
             </form>

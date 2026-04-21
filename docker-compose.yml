@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  packmate:
+  pakmaatje:
     build: .
-    container_name: packmate
+    container_name: pakmaatje
     restart: unless-stopped
     ports:
       - "3000:3000"

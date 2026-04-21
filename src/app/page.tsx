@@ -1,14 +1,18 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { LogOut, Plus, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { DashboardClient } from "./DashboardClient";
+import { getDictionary, LOCALE_COOKIE_NAME, resolveLocale } from "@/lib/i18n";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
+  const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE_NAME)?.value);
+  const messages = getDictionary(locale);
 
   if (!session?.user) {
     redirect("/login");
@@ -38,9 +42,9 @@ export default async function Home() {
   return (
     <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-12">
       <header className="flex items-center justify-between mb-12">
-        <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{messages.dashboard.title}</h1>
         <div className="flex items-center gap-4">
-          <Link href="/api/auth/signout" className="text-zinc-400 hover:text-white transition">
+          <Link href="/api/auth/signout" title={messages.common.signOut} aria-label={messages.common.signOut} className="text-zinc-400 hover:text-white transition">
             <LogOut className="w-5 h-5" />
           </Link>
           {session.user.role === "ADMIN" && (
@@ -50,7 +54,7 @@ export default async function Home() {
           )}
           <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden relative flex items-center justify-center">
             {session.user.image ? (
-              <Image src={session.user.image} alt={session.user.name || "User"} fill className="object-cover" />
+              <Image src={session.user.image} alt={session.user.name || messages.common.user} fill className="object-cover" />
             ) : (
               <span className="text-sm font-medium">{session.user.email?.charAt(0).toUpperCase()}</span>
             )}
@@ -58,7 +62,7 @@ export default async function Home() {
         </div>
       </header>
 
-      <DashboardClient initialProjects={projects} userId={session.user.id} />
+      <DashboardClient initialProjects={projects} />
     </main>
   );
 }

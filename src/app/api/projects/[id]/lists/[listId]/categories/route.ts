@@ -3,9 +3,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string, listId: string }> }) {
+export async function POST(req: Request, { params }: { params: Promise<{ listId: string }> }) {
   try {
-    const { id, listId } = await params;
+    const { listId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user || session.user.status !== "APPROVED") {
@@ -35,9 +35,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string, listId: string }> }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ listId: string }> }) {
   try {
-    const { id, listId } = await params;
+    await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user || session.user.status !== "APPROVED") {
