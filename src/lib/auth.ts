@@ -1,39 +1,83 @@
 import { type NextAuthOptions } from "next-auth"
-import { type Adapter } from "next-auth/adapters"
-import GoogleProvider from "next-auth/providers/google"
-import { PrismaAdapter } from "@auth/prisma-adapter"
+import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
+import { verifyPassword } from "./password"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as Adapter,
+  session: {
+    strategy: "jwt",
+  },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = credentials?.email?.toLowerCase().trim()
+        const password = credentials?.password
+
+        if (!email || !password) {
+          return null
+        }
+
+        const user = await prisma.user.findUnique({ where: { email } })
+
+        if (!user?.passwordHash) {
+          return null
+        }
+
+        const isValidPassword = verifyPassword(password, user.passwordHash)
+
+        if (!isValidPassword) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          status: user.status,
+        }
+      },
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role
+        token.status = user.status
+        return token
+      }
+
+      if (!token.sub) {
+        return token
+      }
+
+      const dbUser = await prisma.user.findUnique({ where: { id: token.sub } })
+
+      if (!dbUser) {
+        return token
+      }
+
+      token.role = dbUser.role
+      token.status = dbUser.status
+      token.name = dbUser.name
+      token.email = dbUser.email
+
+      return token
+    },
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id
-        session.user.role = user.role
-        session.user.status = user.status
+        session.user.id = token.sub || ""
+        session.user.role = typeof token.role === "string" ? token.role : "USER"
+        session.user.status = typeof token.status === "string" ? token.status : "PENDING"
+        session.user.name = typeof token.name === "string" ? token.name : null
+        session.user.email = typeof token.email === "string" ? token.email : null
       }
       return session
-    },
-  },
-  events: {
-    async createUser(message) {
-      // If this is the admin email, automatically approve and make admin
-      if (message.user.email === process.env.ADMIN_EMAIL) {
-        await prisma.user.update({
-          where: { id: message.user.id },
-          data: {
-            role: "ADMIN",
-            status: "APPROVED",
-          },
-        })
-      }
     },
   },
   pages: {

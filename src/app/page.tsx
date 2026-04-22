@@ -18,7 +18,7 @@ export default async function Home() {
     redirect("/login");
   }
 
-  if (session.user.status === "PENDING") {
+  if (session.user.status !== "APPROVED") {
     redirect("/pending");
   }
 

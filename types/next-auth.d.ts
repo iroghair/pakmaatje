@@ -18,3 +18,10 @@ declare module "next-auth" {
     status: string
   }
 }
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: string
+    status?: string
+  }
+}
