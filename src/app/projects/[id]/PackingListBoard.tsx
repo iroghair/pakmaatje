@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type WheelEvent as ReactWheelEvent } from "react";
 import { Category, Item, PackingList, User } from "@prisma/client";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Plus, GripVertical, Edit2, Copy, Trash2 } from "lucide-react";
@@ -26,6 +26,61 @@ type PackingListBoardProps = {
 export function PackingListBoard({ list, projectId, users, onListUpdated }: PackingListBoardProps) {
   const messages = useTranslations();
   const [localList, setLocalList] = useState(list);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const isPanningRef = useRef(false);
+  const panStartXRef = useRef(0);
+  const panStartScrollLeftRef = useRef(0);
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isPanningRef.current || !scrollContainerRef.current) return;
+
+      const deltaX = event.clientX - panStartXRef.current;
+      scrollContainerRef.current.scrollLeft = panStartScrollLeftRef.current - deltaX;
+    };
+
+    const stopPanning = () => {
+      if (!isPanningRef.current) return;
+      isPanningRef.current = false;
+      document.body.style.removeProperty("user-select");
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopPanning);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", stopPanning);
+      document.body.style.removeProperty("user-select");
+    };
+  }, []);
+
+  const handleCanvasMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0 || !scrollContainerRef.current) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-list-panel='true']")) return;
+    if (target.closest("button, input, select, textarea, a, [role='button']")) return;
+
+    isPanningRef.current = true;
+    panStartXRef.current = event.clientX;
+    panStartScrollLeftRef.current = scrollContainerRef.current.scrollLeft;
+    document.body.style.userSelect = "none";
+    event.preventDefault();
+  };
+
+  const handleCanvasWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    if (!scrollContainerRef.current) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-list-panel='true']")) return;
+
+    const horizontalDelta = event.deltaX !== 0 ? event.deltaX : event.deltaY;
+    if (horizontalDelta === 0) return;
+
+    scrollContainerRef.current.scrollLeft += horizontalDelta;
+    event.preventDefault();
+  };
 
   const updateItemAPI = async (item: ItemWithAssignee, categoryId: string, updates: ItemUpdates) => {
     const updatedCategories = localList.categories.map((c) => {
@@ -185,7 +240,12 @@ export function PackingListBoard({ list, projectId, users, onListUpdated }: Pack
   };
 
   return (
-    <div className="flex-1 overflow-x-auto overflow-y-hidden hide-scrollbar">
+    <div
+      ref={scrollContainerRef}
+      onMouseDown={handleCanvasMouseDown}
+      onWheel={handleCanvasWheel}
+      className="flex-1 overflow-x-auto overflow-y-hidden hide-scrollbar cursor-grab active:cursor-grabbing"
+    >
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex items-start gap-4 h-full pb-4">
           {localList.categories.map((category) => {
@@ -194,7 +254,7 @@ export function PackingListBoard({ list, projectId, users, onListUpdated }: Pack
             const totalPacked = category.items.reduce((sum, i) => sum + i.packedCount, 0);
 
             return (
-              <div key={category.id} className="flex-shrink-0 w-80 max-h-full flex flex-col bg-white/20 backdrop-blur-md shadow-xl rounded-2xl border border-white/40">
+              <div key={category.id} data-list-panel="true" className="flex-shrink-0 w-80 max-h-full flex flex-col bg-white/20 backdrop-blur-md shadow-xl rounded-2xl border border-white/40">
                 <div className="p-3 border-b border-white/40 flex flex-col gap-1 sticky top-0 bg-white/30 backdrop-blur-xl rounded-t-2xl z-10">
                   <div className="flex items-center justify-between group/cat">
                     <h3 className="font-extrabold text-primary-950 drop-shadow-sm">{category.name}</h3>
