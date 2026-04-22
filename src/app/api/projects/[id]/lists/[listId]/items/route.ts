@@ -81,3 +81,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string, listId: string }> }) {
+  try {
+    await params;
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user || session.user.status !== "APPROVED") {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const { itemId } = await req.json();
+
+    if (!itemId) {
+      return new NextResponse("Item ID required", { status: 400 });
+    }
+
+    await prisma.item.delete({ where: { id: itemId } });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("[ITEMS_DELETE]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}

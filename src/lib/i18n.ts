@@ -129,6 +129,7 @@ const dictionaries = {
         duplicateCategory: "Naam voor gedupliceerde categorie:",
         renameItem: "Item hernoemen:",
         quantity: "Aantal:",
+        deleteItemConfirm: "Weet je zeker dat je dit item wilt verwijderen?",
       },
     },
     notesBoard: {
@@ -251,6 +252,7 @@ const dictionaries = {
         duplicateCategory: "Name for duplicated category:",
         renameItem: "Rename item:",
         quantity: "Quantity:",
+        deleteItemConfirm: "Are you sure you want to delete this item?",
       },
     },
     notesBoard: {

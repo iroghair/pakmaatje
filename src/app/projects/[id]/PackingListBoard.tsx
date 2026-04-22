@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Category, Item, PackingList, User } from "@prisma/client";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Plus, GripVertical, Edit2, Copy } from "lucide-react";
+import { Plus, GripVertical, Edit2, Copy, Trash2 } from "lucide-react";
 import { useTranslations } from "@/components/LocaleProvider";
 
 type BoardUser = Pick<User, "id" | "name" | "email" | "image">;
@@ -117,6 +117,25 @@ export function PackingListBoard({ list, projectId, users, onListUpdated }: Pack
     if (newStaged + newPacked > item.quantity) return; // Prevent exceeding quantity
 
     updateItemAPI(item, categoryId, { stagedCount: newStaged, packedCount: newPacked });
+  };
+
+  const handleDeleteItem = async (item: ItemWithAssignee, categoryId: string) => {
+    if (!window.confirm(messages.packing.prompts.deleteItemConfirm)) return;
+
+    const updatedCategories = localList.categories.map((c) => {
+      if (c.id === categoryId) {
+        return { ...c, items: c.items.filter((i) => i.id !== item.id) };
+      }
+      return c;
+    });
+    setLocalList({ ...localList, categories: updatedCategories });
+    onListUpdated({ ...localList, categories: updatedCategories });
+
+    await fetch(`/api/projects/${projectId}/lists/${list.id}/items`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId: item.id }),
+    });
   };
 
   const handleAssigneeChange = async (item: ItemWithAssignee, categoryId: string, assigneeId: string | null) => {
@@ -321,6 +340,12 @@ export function PackingListBoard({ list, projectId, users, onListUpdated }: Pack
                                     className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-800 transition-opacity"
                                   >
                                     <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteItem(item, category.id)}
+                                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 transition-opacity"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
 
