@@ -234,7 +234,29 @@ export function PackingListBoard({ list, projectId, users, onListUpdated }: Pack
                   </div>
                 </div>
                 
-                <Droppable droppableId={category.id}>
+                <Droppable
+                  droppableId={category.id}
+                  renderClone={(provided, _snapshot, rubric) => {
+                    const cloneItem = category.items[rubric.source.index];
+                    const cloneStatus = getStatusDisplay(cloneItem);
+                    return (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className="flex items-center gap-3 p-3 rounded-xl border bg-white border-primary-500/50 shadow-2xl rotate-2 scale-105"
+                      >
+                        <GripVertical className="w-4 h-4 text-gray-400" />
+                        {cloneItem.quantity === 1 ? (
+                          <span className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center border font-mono text-xs font-bold ${cloneStatus.colors}`}>{cloneStatus.icon}</span>
+                        ) : (
+                          <span className={`shrink-0 px-1.5 py-0.5 rounded-md border text-[10px] font-bold font-mono ${cloneStatus.colors}`}>{cloneItem.packedCount}/{cloneItem.quantity}</span>
+                        )}
+                        <span className={`flex-1 text-sm font-bold ${cloneItem.packedCount === cloneItem.quantity ? 'line-through text-gray-400' : 'text-gray-900'}`}>{cloneItem.name}</span>
+                      </div>
+                    );
+                  }}
+                >
                   {(provided, snapshot) => (
                     <div 
                       {...provided.droppableProps} 
