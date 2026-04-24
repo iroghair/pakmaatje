@@ -2,6 +2,7 @@ import { type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
 import { verifyPassword } from "./password"
+import { generateDefaultAvatar } from "./avatar"
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -38,6 +39,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
+          image: user.image || generateDefaultAvatar(user.email || user.id),
           role: user.role,
           status: user.status,
         }
@@ -66,6 +68,7 @@ export const authOptions: NextAuthOptions = {
       token.status = dbUser.status
       token.name = dbUser.name
       token.email = dbUser.email
+      token.image = dbUser.image || generateDefaultAvatar(dbUser.email || dbUser.id)
 
       return token
     },
@@ -76,6 +79,7 @@ export const authOptions: NextAuthOptions = {
         session.user.status = typeof token.status === "string" ? token.status : "PENDING"
         session.user.name = typeof token.name === "string" ? token.name : null
         session.user.email = typeof token.email === "string" ? token.email : null
+        session.user.image = typeof token.image === "string" ? token.image : null
       }
       return session
     },

@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, Shield } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
@@ -44,12 +44,15 @@ export default async function Home() {
       <header className="flex items-center justify-between mb-12">
         <h1 className="text-3xl font-bold tracking-tight">{messages.dashboard.title}</h1>
         <div className="flex items-center gap-4">
+          <Link href="/settings" title={messages.settings.title} aria-label={messages.settings.title} className="text-zinc-400 hover:text-white transition">
+            <Settings className="w-5 h-5" />
+          </Link>
           <Link href="/api/auth/signout" title={messages.common.signOut} aria-label={messages.common.signOut} className="text-zinc-400 hover:text-white transition">
             <LogOut className="w-5 h-5" />
           </Link>
           {session.user.role === "ADMIN" && (
-            <Link href="/admin" className="text-zinc-400 hover:text-white transition">
-              <Settings className="w-5 h-5" />
+            <Link href="/admin" title={messages.admin.title} aria-label={messages.admin.title} className="text-zinc-400 hover:text-white transition">
+              <Shield className="w-5 h-5" />
             </Link>
           )}
           <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden relative flex items-center justify-center">

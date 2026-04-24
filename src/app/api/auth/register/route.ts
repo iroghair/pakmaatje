@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
+import { generateDefaultAvatar } from "@/lib/avatar";
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
       data: {
         name: normalizedName || null,
         email: normalizedEmail,
+        image: generateDefaultAvatar(normalizedEmail),
         passwordHash: hashPassword(password),
         role: isAdminEmail ? "ADMIN" : "USER",
         status: isAdminEmail ? "APPROVED" : "PENDING",
