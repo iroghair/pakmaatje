@@ -2,19 +2,13 @@
 Een docker-based web-interface voor gezamenlijk opstellen van inpaklijstjes, bijvoorbeeld voor vakanties of verbouwingen
 
 ## Wat is het?
-Pakmaatje draait in een Docker-container en gebruikt een SQLite-database om de gegevens op te slaan. Je kunt de container starten met behulp van Docker Compose, waarna je toegang krijgt tot de webinterface via je browser. In de interface kun je lijsten aanmaken, items toevoegen en delen met anderen. Ik heb het gebouwd omdat ik lokaal, onafhankelijk van externe services, samen met de familie een inpaklijst wilde kunnen maken voor onze vakanties. Oplossingen zoals Google Docs of Notion waren te omslachtig, en ik wil iets dat ik kan openen/toevoegen zodra me iets te binnen schiet; ook onderweg. De bedoeling is dat de container draait op een lokale NAS.
+Pakmaatje draait in een Docker-container en gebruikt een SQLite-database om de gegevens op te slaan. Je kunt de container starten met behulp van Docker Compose, waarna je toegang krijgt tot de webinterface via je browser. In de interface kun je lijsten aanmaken, items toevoegen en delen met anderen. Waarom? Ik heb het gebouwd omdat ik lokaal en onafhankelijk van derden, samen met de familie een inpaklijst wilde kunnen maken voor onze vakanties. Oplossingen zoals Google Docs of Notion waren te omslachtig, en hebben een account nodig. Bovendien moet het met 1 druk via pc of telefoon bereikbaar zijn als ik iets wil toevoegen zodra me iets te binnen schiet. De bedoeling is dat de container draait op een lokale NAS.
 
 ## Hoe werkt het?
 Vanuit de prompt, gebruik de volgende commando's om de server lokaal te starten:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in de browser en ga aan de slag!
