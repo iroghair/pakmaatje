@@ -1,8 +1,11 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pakmaatje
+Een docker-based web-interface voor gezamenlijk opstellen van inpaklijstjes, bijvoorbeeld voor vakanties of verbouwingen
 
-## Getting Started
+## Wat is het?
+Pakmaatje draait in een Docker-container en gebruikt een SQLite-database om de gegevens op te slaan. Je kunt de container starten met behulp van Docker Compose, waarna je toegang krijgt tot de webinterface via je browser. In de interface kun je lijsten aanmaken, items toevoegen en delen met anderen. Ik heb het gebouwd omdat ik lokaal, onafhankelijk van externe services, samen met de familie een inpaklijst wilde kunnen maken voor onze vakanties. Oplossingen zoals Google Docs of Notion waren te omslachtig, en ik wil iets dat ik kan openen/toevoegen zodra me iets te binnen schiet; ook onderweg. De bedoeling is dat de container draait op een lokale NAS.
 
-First, run the development server:
+## Hoe werkt het?
+Vanuit de prompt, gebruik de volgende commando's om de server lokaal te starten:
 
 ```bash
 npm run dev
@@ -14,13 +17,13 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in de browser en ga aan de slag!
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Ontwikkelaars
+Dit project is grotendeels gebouwd met Anti-Gravity en Claude code, met lokaal enkele persoonlijke aanpassingen. 
 
-## Learn More
+### Learn More
 
 To learn more about Next.js, take a look at the following resources:
 
@@ -29,7 +32,7 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+### Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
