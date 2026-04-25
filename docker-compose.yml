@@ -5,6 +5,7 @@ services:
     build: .
     container_name: pakmaatje
     restart: unless-stopped
+    user: "0:0"
     ports:
       - "3000:3000"
     volumes:
@@ -16,4 +17,4 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
     # Important: Automatically push schema on startup if dev.db doesn't exist
-    command: sh -c "npx prisma db push && node server.js"
+    command: sh -c "npx prisma@5.22.0 db push --skip-generate && node server.js"
